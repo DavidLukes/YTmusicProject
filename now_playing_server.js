@@ -4,12 +4,16 @@
 const express = require('express');
 const cors = require('cors');
 
+const fs = require('fs');
+const path = require('path');
+
 const app = express();
 const PORT = 3000;
 
 // Middleware
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json()); // Parse JSON request bodies
+app.use('/screensaver-images', express.static(path.join(__dirname, 'screensaver_images'))); // Serve screensaver images
 
 // In-memory storage for current track data
 let currentTrack = {
