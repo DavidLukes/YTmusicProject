@@ -95,10 +95,22 @@ function scrapeTrackData() {
         }
 
         // Get like status
-        const likeButton = document.querySelector('.like.ytmusic-like-button-renderer');
+        // Get like status
+        // Try multiple selectors for robustness
+        const likeButton = document.querySelector('.like.ytmusic-like-button-renderer') ||
+            document.querySelector('ytmusic-like-button-renderer .like') ||
+            document.querySelector('ytmusic-like-button-renderer button');
+
         let isLiked = false;
         if (likeButton) {
-            isLiked = likeButton.getAttribute('aria-pressed') === 'true';
+            // Check aria-pressed (standard)
+            if (likeButton.getAttribute('aria-pressed') === 'true') {
+                isLiked = true;
+            }
+            // Check aria-label (sometimes changes to "Unlike")
+            else if (likeButton.getAttribute('aria-label') === 'Unlike') {
+                isLiked = true;
+            }
         }
 
         // If no title found, treat as nothing playing
@@ -170,6 +182,7 @@ function hasTrackChanged(newData, oldData) {
     return newData.title !== oldData.title ||
         newData.artist !== oldData.artist ||
         newData.isPlaying !== oldData.isPlaying ||
+        newData.isLiked !== oldData.isLiked ||
         newData.currentTime !== oldData.currentTime; // Check time changes too
 }
 
