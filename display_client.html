@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Now Playing - YouTube Music</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .album-art-container {
+      position: relative;
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .album-art {
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .playing .album-art {
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                    0 0 0 0 rgba(139, 92, 246, 0);
+      }
+      50% {
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                    0 0 40px 10px rgba(139, 92, 246, 0.4);
+      }
+    }
+
+    .paused .album-art {
+      opacity: 0.6;
+      filter: grayscale(0.3);
+    }
+
+    .track-title {
+      font-weight: 900;
+      font-size: 2.5rem;
+      line-height: 1.2;
+      background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 2px 20px rgba(255, 255, 255, 0.1);
+      transition: all 0.4s ease;
+    }
+
+    .track-artist {
+      font-weight: 600;
+      font-size: 1.5rem;
+      color: #c7d2fe;
+      transition: all 0.4s ease;
+    }
+
+    .status-indicator {
+      transition: all 0.3s ease;
+    }
+
+    .playing .status-indicator {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      animation: pulse-indicator 2s ease-in-out infinite;
+    }
+
+    .paused .status-indicator {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    @keyframes pulse-indicator {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.1); }
+    }
+
+    .loading-state {
+      animation: fade-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes fade-pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.7; }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.6s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .track-title {
+        font-size: 1.75rem;
+      }
+      .track-artist {
+        font-size: 1.125rem;
+      }
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center p-8">
+  <div id="app" class="w-full max-w-2xl">
+    <!-- Main Container -->
+    <div id="player-container" class="fade-in">
+      <!-- Album Art -->
+      <div id="album-art-wrapper" class="album-art-container mb-8">
+        <img 
+          id="album-art" 
+          class="album-art w-full aspect-square object-cover"
+          src="" 
+          alt="Album Art"
+        />
+      </div>
+
+      <!-- Track Info -->
+      <div class="text-center space-y-4">
+        <!-- Status Indicator -->
+        <div class="flex items-center justify-center gap-3 mb-6">
+          <div id="status-indicator" class="status-indicator w-3 h-3 rounded-full"></div>
+          <span id="status-text" class="text-indigo-300 text-sm font-semibold uppercase tracking-wider">
+            Loading...
+          </span>
+        </div>
+
+        <!-- Track Title -->
+        <h1 id="track-title" class="track-title">
+          Connecting...
+        </h1>
+
+        <!-- Artist Name -->
+        <p id="track-artist" class="track-artist">
+          Please wait
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    const SERVER_URL = 'http://localhost:3000/now-playing';
+    const POLL_INTERVAL = 3000; // Poll every 3 seconds
+
+    // DOM Elements
+    const albumArtWrapper = document.getElementById('album-art-wrapper');
+    const albumArt = document.getElementById('album-art');
+    const trackTitle = document.getElementById('track-title');
+    const trackArtist = document.getElementById('track-artist');
+    const statusIndicator = document.getElementById('status-indicator');
+    const statusText = document.getElementById('status-text');
+
+    // State
+    let currentTrackData = null;
+    let isFirstLoad = true;
+
+    /**
+     * Fetches the current track data from the server
+     */
+    async function fetchNowPlaying() {
+      try {
+        const response = await fetch(SERVER_URL);
+        
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        updateDisplay(data);
+        
+      } catch (error) {
+        console.error('Failed to fetch now playing data:', error);
+        showErrorState();
+      }
+    }
+
+    /**
+     * Updates the display with new track data
+     */
+    function updateDisplay(data) {
+      const { title, artist, albumArt: albumArtUrl, isPlaying } = data;
+
+      // Check if this is actually new data
+      const hasChanged = !currentTrackData || 
+                         currentTrackData.title !== title ||
+                         currentTrackData.artist !== artist ||
+                         currentTrackData.isPlaying !== isPlaying;
+
+      currentTrackData = data;
+
+      // Update playing/paused state
+      if (title === 'Nothing Playing' || !title) {
+        showNothingPlayingState();
+        return;
+      }
+
+      // Update album art
+      if (albumArtUrl && albumArt.src !== albumArtUrl) {
+        albumArt.src = albumArtUrl;
+        albumArt.alt = `${title} by ${artist}`;
+      } else if (!albumArtUrl) {
+        // Use a placeholder gradient if no album art
+        albumArt.src = 'data:image/svg+xml,' + encodeURIComponent(`
+          <svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            <rect width="600" height="600" fill="url(#grad)"/>
+            <text x="50%" y="50%" font-family="Arial" font-size="80" fill="white" text-anchor="middle" dy=".3em">🎵</text>
+          </svg>
+        `);
+      }
+
+      // Update text content
+      trackTitle.textContent = title;
+      trackArtist.textContent = artist || 'Unknown Artist';
+
+      // Update status
+      if (isPlaying) {
+        albumArtWrapper.classList.remove('paused');
+        albumArtWrapper.classList.add('playing');
+        statusText.textContent = 'Now Playing';
+      } else {
+        albumArtWrapper.classList.remove('playing');
+        albumArtWrapper.classList.add('paused');
+        statusText.textContent = 'Paused';
+      }
+
+      // Add fade-in effect on first load or track change
+      if (isFirstLoad || hasChanged) {
+        albumArtWrapper.classList.remove('fade-in');
+        void albumArtWrapper.offsetWidth; // Trigger reflow
+        albumArtWrapper.classList.add('fade-in');
+        isFirstLoad = false;
+      }
+    }
+
+    /**
+     * Shows the "Nothing Playing" state
+     */
+    function showNothingPlayingState() {
+      trackTitle.textContent = 'Nothing Playing';
+      trackArtist.textContent = 'Start playing music on YouTube Music';
+      statusText.textContent = 'Idle';
+      
+      albumArtWrapper.classList.remove('playing');
+      albumArtWrapper.classList.add('paused');
+      
+      // Show placeholder
+      albumArt.src = 'data:image/svg+xml,' + encodeURIComponent(`
+        <svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#4b5563;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#1f2937;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+          <rect width="600" height="600" fill="url(#grad)"/>
+          <text x="50%" y="50%" font-family="Arial" font-size="120" fill="#9ca3af" text-anchor="middle" dy=".3em">♪</text>
+        </svg>
+      `);
+    }
+
+    /**
+     * Shows error state when server is unreachable
+     */
+    function showErrorState() {
+      trackTitle.textContent = 'Connection Error';
+      trackArtist.textContent = 'Unable to reach the server';
+      statusText.textContent = 'Offline';
+      albumArtWrapper.classList.remove('playing');
+      albumArtWrapper.classList.add('paused');
+    }
+
+    /**
+     * Initialize the display
+     */
+    function initialize() {
+      console.log('YouTube Music Now Playing Display initialized');
+      
+      // Fetch immediately
+      fetchNowPlaying();
+      
+      // Then poll at regular intervals
+      setInterval(fetchNowPlaying, POLL_INTERVAL);
+    }
+
+    // Start when page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initialize);
+    } else {
+      initialize();
+    }
+  </script>
+</body>
+</html>

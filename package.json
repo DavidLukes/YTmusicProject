@@ -1,0 +1,22 @@
+{
+    "name": "youtube-music-now-playing",
+    "version": "1.0.0",
+    "description": "Self-hosted Now Playing display system for YouTube Music",
+    "main": "now_playing_server.js",
+    "scripts": {
+        "start": "node now_playing_server.js",
+        "dev": "node now_playing_server.js"
+    },
+    "keywords": [
+        "youtube-music",
+        "now-playing",
+        "scraper",
+        "display"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "express": "^4.18.2",
+        "cors": "^2.8.5"
+    }
+}
