@@ -109,28 +109,43 @@
     }
 
     .glass-container.liked {
-      border-color: rgba(255, 100, 100, 0.3);
+      border-color: rgba(255, 255, 255, 0.5);
     }
 
     .glass-container.liked::after {
       content: '';
       position: absolute;
-      top: -4px;
-      left: -4px;
-      right: -4px;
-      bottom: -4px;
-      border-radius: 44px;
+      top: -6px;
+      left: -6px;
+      right: -6px;
+      bottom: -6px;
+      border-radius: 46px;
       z-index: -1;
-      background: linear-gradient(60deg,
-          #ff0000,
-          #ff4d4d,
-          #ff0055,
-          #ff0000);
+      /* Siri/Gemini inspired rich gradient */
+      background: linear-gradient(120deg,
+          #00C6FF,
+          #0072FF,
+          #A100FF,
+          #FF0066,
+          #00C6FF);
       background-size: 300% 300%;
-      animation: border-flow 3s ease infinite;
-      filter: blur(10px);
-      opacity: 0.8;
+      animation: border-flow 4s linear infinite;
+
+      /* Stronger glow effect */
+      filter: blur(12px);
+      opacity: 1;
       transition: opacity 0.5s ease;
+
+      /* Mask the center to show only the border */
+      padding: 6px;
+      -webkit-mask:
+        linear-gradient(#fff, #fff) content-box,
+        linear-gradient(#fff, #fff);
+      mask:
+        linear-gradient(#fff, #fff) content-box,
+        linear-gradient(#fff, #fff);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
     }
 
     /* Ensure the pseudo-element is hidden when not liked */
