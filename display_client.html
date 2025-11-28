@@ -71,7 +71,6 @@
       align-items: center;
       gap: 80px;
       position: relative;
-      /* overflow: hidden; Removed to allow border animation */
       animation: fadeIn 0.8s ease;
       transition: border-color 0.5s ease;
     }
@@ -93,64 +92,97 @@
       border-radius: inherit;
     }
 
-    /* Siri-like Border Animation for Liked Tracks */
-    @keyframes border-flow {
+    /* Advanced Liquid Animation */
+    @keyframes rotate-blob {
       0% {
-        background-position: 0% 50%;
+        transform: rotate(0deg) scale(1);
       }
 
-      50% {
-        background-position: 100% 50%;
+      33% {
+        transform: rotate(120deg) scale(1.2);
+      }
+
+      66% {
+        transform: rotate(240deg) scale(0.8);
       }
 
       100% {
-        background-position: 0% 50%;
+        transform: rotate(360deg) scale(1);
       }
     }
 
-    .glass-container.liked {
-      border-color: rgba(255, 255, 255, 0.5);
+    @keyframes rotate-blob-reverse {
+      0% {
+        transform: rotate(360deg) scale(1);
+      }
+
+      33% {
+        transform: rotate(240deg) scale(0.8);
+      }
+
+      66% {
+        transform: rotate(120deg) scale(1.2);
+      }
+
+      100% {
+        transform: rotate(0deg) scale(1);
+      }
     }
 
-    .glass-container.liked::after {
+    /* Heart Icon Styles */
+    .like-icon {
+      position: absolute;
+      right: 40px;
+      top: 40px;
+      width: 48px;
+      height: 48px;
+      z-index: 10;
+
+      /* Masking to create the heart shape */
+      -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>') no-repeat center;
+      mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>') no-repeat center;
+      -webkit-mask-size: contain;
+      mask-size: contain;
+
+      /* Glow effect */
+      filter: drop-shadow(0 0 8px rgba(255, 0, 50, 0.6));
+
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+      /* Ensure blobs stay inside */
+      overflow: hidden;
+    }
+
+    /* Liquid Blobs */
+    .like-icon::before,
+    .like-icon::after {
       content: '';
       position: absolute;
-      top: -6px;
-      left: -6px;
-      right: -6px;
-      bottom: -6px;
-      border-radius: 46px;
-      z-index: -1;
-      /* Siri/Gemini inspired rich gradient */
-      background: linear-gradient(120deg,
-          #00C6FF,
-          #0072FF,
-          #A100FF,
-          #FF0066,
-          #00C6FF);
-      background-size: 300% 300%;
-      animation: border-flow 4s linear infinite;
-
-      /* Stronger glow effect */
-      filter: blur(12px);
-      opacity: 1;
-      transition: opacity 0.5s ease;
-
-      /* Mask the center to show only the border */
-      padding: 6px;
-      -webkit-mask:
-        linear-gradient(#fff, #fff) content-box,
-        linear-gradient(#fff, #fff);
-      mask:
-        linear-gradient(#fff, #fff) content-box,
-        linear-gradient(#fff, #fff);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      border-radius: 40%;
+      opacity: 0.9;
     }
 
-    /* Ensure the pseudo-element is hidden when not liked */
-    .glass-container:not(.liked)::after {
-      opacity: 0;
+    .like-icon::before {
+      background: linear-gradient(45deg, #ff0000, #ff4d4d, #cc0000);
+      animation: rotate-blob 6s linear infinite;
+    }
+
+    .like-icon::after {
+      background: linear-gradient(45deg, #ff0055, #ff3333, #990000);
+      animation: rotate-blob-reverse 8s linear infinite;
+      mix-blend-mode: overlay;
+    }
+
+    /* Visible state for the heart */
+    .glass-container.liked .like-icon {
+      opacity: 1;
+      transform: scale(1);
     }
 
     .album-art-container {
@@ -382,6 +414,19 @@
         gap: 40px;
       }
 
+      /* Adjust heart position for mobile */
+      .like-icon {
+        right: 20px;
+        top: 20px;
+        transform: none;
+        width: 40px;
+        height: 40px;
+      }
+
+      .glass-container.liked .like-icon {
+        transform: scale(1.1);
+      }
+
       .album-art-container {
         flex: 0 0 auto;
         width: 100%;
@@ -427,6 +472,18 @@
         max-width: 100%;
         width: 98%;
         height: auto;
+      }
+
+      .like-icon {
+        right: 25px;
+        top: 25px;
+        transform: none;
+        width: 40px;
+        height: 40px;
+      }
+
+      .glass-container.liked .like-icon {
+        transform: scale(1);
       }
 
       .album-art-container {
@@ -498,6 +555,9 @@
         <div id="total-time" class="time-label">0:00</div>
       </div>
     </div>
+
+    <!-- Liquid Heart Icon -->
+    <div class="like-icon"></div>
   </div>
 
   <div id="screensaver" class="screensaver">
