@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "YouTube Music Now Playing Scraper by Davidlukes",
-    "version": "2.0.1",
+    "version": "2.0.3",
     "description": "Scrapes now playing information from YouTube Music and sends it to a local server",
     "permissions": [
         "activeTab"

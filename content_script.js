@@ -95,10 +95,22 @@ function scrapeTrackData() {
         }
 
         // Get like status
-        const likeButton = document.querySelector('.like.ytmusic-like-button-renderer');
         let isLiked = false;
-        if (likeButton) {
-            isLiked = likeButton.getAttribute('aria-pressed') === 'true';
+        const likeButtonRenderer = document.querySelector('ytmusic-player-bar ytmusic-like-button-renderer');
+
+        if (likeButtonRenderer) {
+            // Check the renderer's like-status attribute (often "LIKE", "INDIFFERENT", etc.)
+            if (likeButtonRenderer.getAttribute('like-status') === 'LIKE') {
+                isLiked = true;
+            } else {
+                // Fallback: Check buttons inside
+                const buttons = likeButtonRenderer.querySelectorAll('button, .yt-spec-button-shape-next');
+                buttons.forEach(btn => {
+                    if (btn.getAttribute('aria-pressed') === 'true') isLiked = true;
+                    if (btn.getAttribute('aria-label') === 'Unlike') isLiked = true;
+                    if (btn.getAttribute('title') === 'Unlike') isLiked = true;
+                });
+            }
         }
 
         // If no title found, treat as nothing playing
@@ -111,7 +123,8 @@ function scrapeTrackData() {
                 currentTime: '0:00',
                 totalTime: '0:00',
                 progress: 0,
-                isPlaying: false
+                isPlaying: false,
+                isLiked: false
             };
         }
 
@@ -170,6 +183,7 @@ function hasTrackChanged(newData, oldData) {
     return newData.title !== oldData.title ||
         newData.artist !== oldData.artist ||
         newData.isPlaying !== oldData.isPlaying ||
+        newData.isLiked !== oldData.isLiked ||
         newData.currentTime !== oldData.currentTime; // Check time changes too
 }
 
