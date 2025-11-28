@@ -56,7 +56,7 @@ app.post('/update-track', (req, res) => {
             lastUpdated: new Date().toISOString()
         };
 
-        console.log(`[SERVER] Track updated: "${currentTrack.title}" by ${currentTrack.artist} [${currentTrack.currentTime}/${currentTrack.totalTime}]`);
+        console.log(`[SERVER] Track updated: "${currentTrack.title}" by ${currentTrack.artist} [${currentTrack.currentTime}/${currentTrack.totalTime}] Liked: ${currentTrack.isLiked}`);
 
         res.json({
             success: true,

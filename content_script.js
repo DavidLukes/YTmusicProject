@@ -95,21 +95,21 @@ function scrapeTrackData() {
         }
 
         // Get like status
-        // Get like status
-        // Try multiple selectors for robustness
-        const likeButton = document.querySelector('.like.ytmusic-like-button-renderer') ||
-            document.querySelector('ytmusic-like-button-renderer .like') ||
-            document.querySelector('ytmusic-like-button-renderer button');
-
         let isLiked = false;
-        if (likeButton) {
-            // Check aria-pressed (standard)
-            if (likeButton.getAttribute('aria-pressed') === 'true') {
+        const likeButtonRenderer = document.querySelector('ytmusic-player-bar ytmusic-like-button-renderer');
+
+        if (likeButtonRenderer) {
+            // Check the renderer's like-status attribute (often "LIKE", "INDIFFERENT", etc.)
+            if (likeButtonRenderer.getAttribute('like-status') === 'LIKE') {
                 isLiked = true;
-            }
-            // Check aria-label (sometimes changes to "Unlike")
-            else if (likeButton.getAttribute('aria-label') === 'Unlike') {
-                isLiked = true;
+            } else {
+                // Fallback: Check buttons inside
+                const buttons = likeButtonRenderer.querySelectorAll('button, .yt-spec-button-shape-next');
+                buttons.forEach(btn => {
+                    if (btn.getAttribute('aria-pressed') === 'true') isLiked = true;
+                    if (btn.getAttribute('aria-label') === 'Unlike') isLiked = true;
+                    if (btn.getAttribute('title') === 'Unlike') isLiked = true;
+                });
             }
         }
 
@@ -123,7 +123,8 @@ function scrapeTrackData() {
                 currentTime: '0:00',
                 totalTime: '0:00',
                 progress: 0,
-                isPlaying: false
+                isPlaying: false,
+                isLiked: false
             };
         }
 
