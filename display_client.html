@@ -568,7 +568,7 @@
     // Configuration
     const SERVER_URL = 'https://192.168.1.181:3000/now-playing';
     const POLL_INTERVAL = 1000; // Poll every 1 second for smooth progress
-    const SCREENSAVER_DELAY = 60000; //1 minute
+    const SCREENSAVER_DELAY = 30000; //1 minute
 
     // DOM Elements
     const albumArtContainer = document.getElementById('album-art-container');
@@ -801,7 +801,7 @@
       const timeString = `${hours}:${minutes}`;
 
       const options = { weekday: 'long', month: 'long', day: 'numeric' };
-      const dateString = now.toLocaleDateString('en-US', options);
+      const dateString = now.toLocaleDateString('cs-CZ', options);
 
       screensaverClockEl.textContent = timeString;
       screensaverDateEl.textContent = dateString;
