@@ -94,6 +94,13 @@ function scrapeTrackData() {
             }
         }
 
+        // Get like status
+        const likeButton = document.querySelector('.like.ytmusic-like-button-renderer');
+        let isLiked = false;
+        if (likeButton) {
+            isLiked = likeButton.getAttribute('aria-pressed') === 'true';
+        }
+
         // If no title found, treat as nothing playing
         if (!titleElement || title === '') {
             return {
@@ -116,7 +123,8 @@ function scrapeTrackData() {
             currentTime,
             totalTime,
             progress,
-            isPlaying
+            isPlaying,
+            isLiked
         };
     } catch (error) {
         console.error('[YTM Scraper] Error scraping track data:', error);
@@ -128,7 +136,8 @@ function scrapeTrackData() {
             currentTime: '0:00',
             totalTime: '0:00',
             progress: 0,
-            isPlaying: false
+            isPlaying: false,
+            isLiked: false
         };
     }
 }

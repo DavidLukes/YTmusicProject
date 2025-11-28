@@ -25,6 +25,7 @@ let currentTrack = {
     totalTime: '0:00',
     progress: 0,
     isPlaying: true,
+    isLiked: false,
     lastUpdated: new Date().toISOString()
 };
 
@@ -34,7 +35,7 @@ let currentTrack = {
  */
 app.post('/update-track', (req, res) => {
     try {
-        const { title, artist, albumArt, year, currentTime, totalTime, progress, isPlaying } = req.body;
+        const { title, artist, albumArt, year, currentTime, totalTime, progress, isPlaying, isLiked } = req.body;
 
         // Validate required fields
         if (typeof title !== 'string') {
@@ -51,6 +52,7 @@ app.post('/update-track', (req, res) => {
             totalTime: totalTime || '0:00',
             progress: progress || 0,
             isPlaying: isPlaying === true,
+            isLiked: isLiked === true,
             lastUpdated: new Date().toISOString()
         };
 
