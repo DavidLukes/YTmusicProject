@@ -1,5 +1,6 @@
 # YouTube Music Now Playing Display System
 Made with ❤ by Davidlukes
+
 A self-hosted, real-time "Now Playing" system that displays album art, track title, and artist name from your active YouTube Music web player without relying on third-party scrobblers.
 
 ## Architecture
