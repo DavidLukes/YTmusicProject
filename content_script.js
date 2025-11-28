@@ -1,7 +1,7 @@
 // YouTube Music Now Playing Scraper
 // Runs in the YTM tab and sends track data to local server
 
-const SERVER_URL = 'http://192.168.1.181:3000/update-track';
+const SERVER_URL = 'https://192.168.1.181:3000/update-track';
 const POLL_INTERVAL = 1000; // Poll every 1 second
 
 let lastTrackData = {

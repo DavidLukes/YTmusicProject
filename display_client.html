@@ -383,18 +383,6 @@
   </div>
 
   <div id="screensaver" class="screensaver">
-    <div id="screensaver-clock" class="screensaver-clock">12:00</div>
-    <div id="screensaver-date" class="screensaver-date">Monday, January 1</div>
-  </div>
-
-  <script>
-    // Configuration
-    const SERVER_URL = 'http://192.168.1.181:3000/now-playing';
-    const POLL_INTERVAL = 1000; // Poll every 1 second for smooth progress
-    const SCREENSAVER_DELAY = 300000; // Screensaver delay in milliseconds (10 seconds) 300000
-
-    // DOM Elements
-    const albumArtContainer = document.getElementById('album-art-container');
     const albumArtWrapper = document.getElementById('album-art-wrapper');
     const albumArt = document.getElementById('album-art');
     const trackTitle = document.getElementById('track-title');
@@ -414,233 +402,233 @@
     let screensaverInterval = null;
 
     /**
-     * Updates the blurred background
-     */
+    * Updates the blurred background
+    */
     function updateBackground(imageUrl) {
-      if (imageUrl) {
-        // Use ::before pseudo-element for the blur effect
-        const style = document.createElement('style');
-        style.textContent = `
-          body::before {
-            background-image: url(${imageUrl});
-          }
-        `;
-        // Remove old style if exists
-        const oldStyle = document.querySelector('style[data-bg]');
-        if (oldStyle) oldStyle.remove();
-        style.setAttribute('data-bg', 'true');
-        document.head.appendChild(style);
-      }
+    if (imageUrl) {
+    // Use ::before pseudo-element for the blur effect
+    const style = document.createElement('style');
+    style.textContent = `
+    body::before {
+    background-image: url(${imageUrl});
+    }
+    `;
+    // Remove old style if exists
+    const oldStyle = document.querySelector('style[data-bg]');
+    if (oldStyle) oldStyle.remove();
+    style.setAttribute('data-bg', 'true');
+    document.head.appendChild(style);
+    }
     }
 
     /**
-     * Fetches the current track data from the server
-     */
+    * Fetches the current track data from the server
+    */
     async function fetchNowPlaying() {
-      try {
-        const response = await fetch(SERVER_URL);
+    try {
+    const response = await fetch(SERVER_URL);
 
-        if (!response.ok) {
-          throw new Error(`Server error: ${response.status}`);
-        }
+    if (!response.ok) {
+    throw new Error(`Server error: ${response.status}`);
+    }
 
-        const data = await response.json();
-        updateDisplay(data);
+    const data = await response.json();
+    updateDisplay(data);
 
-      } catch (error) {
-        console.error('Failed to fetch now playing data:', error);
-        showErrorState();
-      }
+    } catch (error) {
+    console.error('Failed to fetch now playing data:', error);
+    showErrorState();
+    }
     }
 
     /**
-     * Updates the display with new track data
-     */
+    * Updates the display with new track data
+    */
     function updateDisplay(data) {
-      const { title, artist, albumArt: albumArtUrl, year, currentTime, totalTime, progress, isPlaying } = data;
+    const { title, artist, albumArt: albumArtUrl, year, currentTime, totalTime, progress, isPlaying } = data;
 
-      // Check if this is actually new data (excluding time/progress for main UI updates)
-      const hasTrackChanged = !currentTrackData ||
-        currentTrackData.title !== title ||
-        currentTrackData.artist !== artist ||
-        currentTrackData.year !== year;
+    // Check if this is actually new data (excluding time/progress for main UI updates)
+    const hasTrackChanged = !currentTrackData ||
+    currentTrackData.title !== title ||
+    currentTrackData.artist !== artist ||
+    currentTrackData.year !== year;
 
-      currentTrackData = data;
+    currentTrackData = data;
 
-      // Reset screensaver timer if track has changed
-      if (hasTrackChanged) {
-        stopScreensaverTimer();
-      }
+    // Reset screensaver timer if track has changed
+    if (hasTrackChanged) {
+    stopScreensaverTimer();
+    }
 
-      // Update playing/paused state
-      if (title === 'Nothing Playing' || !title) {
-        showNothingPlayingState();
-        startScreensaverTimer();
-        return;
-      }
+    // Update playing/paused state
+    if (title === 'Nothing Playing' || !title) {
+    showNothingPlayingState();
+    startScreensaverTimer();
+    return;
+    }
 
-      // Update album art and background
-      if (albumArtUrl && albumArt.src !== albumArtUrl) {
-        albumArt.src = albumArtUrl;
-        albumArt.alt = `${title} by ${artist}`;
-        updateBackground(albumArtUrl);
-      } else if (!albumArtUrl) {
-        // Use a placeholder gradient if no album art
-        const placeholderSvg = 'data:image/svg+xml,' + encodeURIComponent(`
-          <svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
-              </linearGradient>
-            </defs>
-            <rect width="600" height="600" fill="url(#grad)"/>
-            <text x="50%" y="50%" font-family="Arial" font-size="80" fill="white" text-anchor="middle" dy=".3em">🎵</text>
-          </svg>
-        `);
-        albumArt.src = placeholderSvg;
-      }
+    // Update album art and background
+    if (albumArtUrl && albumArt.src !== albumArtUrl) {
+    albumArt.src = albumArtUrl;
+    albumArt.alt = `${title} by ${artist}`;
+    updateBackground(albumArtUrl);
+    } else if (!albumArtUrl) {
+    // Use a placeholder gradient if no album art
+    const placeholderSvg = 'data:image/svg+xml,' + encodeURIComponent(`
+    <svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <rect width="600" height="600" fill="url(#grad)" />
+      <text x="50%" y="50%" font-family="Arial" font-size="80" fill="white" text-anchor="middle" dy=".3em">🎵</text>
+    </svg>
+    `);
+    albumArt.src = placeholderSvg;
+    }
 
-      // Update text content
-      trackTitle.textContent = title;
-      trackArtist.textContent = artist || 'Unknown Artist';
-      trackYear.textContent = year ? `Released: ${year}` : '';
+    // Update text content
+    trackTitle.textContent = title;
+    trackArtist.textContent = artist || 'Unknown Artist';
+    trackYear.textContent = year ? `Released: ${year}` : '';
 
-      // Update progress
-      currentTimeEl.textContent = currentTime || '0:00';
-      totalTimeEl.textContent = totalTime || '0:00';
-      progressFill.style.width = `${progress || 0}%`;
+    // Update progress
+    currentTimeEl.textContent = currentTime || '0:00';
+    totalTimeEl.textContent = totalTime || '0:00';
+    progressFill.style.width = `${progress || 0}%`;
 
-      // Update status styles
-      if (isPlaying) {
-        albumArtContainer.classList.remove('paused');
-        albumArtContainer.classList.add('playing');
-        stopScreensaverTimer();
-      } else {
-        albumArtContainer.classList.remove('playing');
-        albumArtContainer.classList.add('paused');
-        startScreensaverTimer();
-      }
+    // Update status styles
+    if (isPlaying) {
+    albumArtContainer.classList.remove('paused');
+    albumArtContainer.classList.add('playing');
+    stopScreensaverTimer();
+    } else {
+    albumArtContainer.classList.remove('playing');
+    albumArtContainer.classList.add('paused');
+    startScreensaverTimer();
+    }
 
-      // Add fade-in effect on first load or track change
-      if (isFirstLoad || hasTrackChanged) {
-        albumArtContainer.classList.remove('fade-in');
-        void albumArtContainer.offsetWidth; // Trigger reflow
-        albumArtContainer.classList.add('fade-in');
-        isFirstLoad = false;
-      }
+    // Add fade-in effect on first load or track change
+    if (isFirstLoad || hasTrackChanged) {
+    albumArtContainer.classList.remove('fade-in');
+    void albumArtContainer.offsetWidth; // Trigger reflow
+    albumArtContainer.classList.add('fade-in');
+    isFirstLoad = false;
+    }
     }
 
     /**
-     * Shows the "Nothing Playing" state
-     */
+    * Shows the "Nothing Playing" state
+    */
     function showNothingPlayingState() {
-      trackTitle.textContent = 'Nothing Playing';
-      trackArtist.textContent = 'Start playing music on YouTube Music';
-      trackYear.textContent = '';
-      currentTimeEl.textContent = '0:00';
-      totalTimeEl.textContent = '0:00';
-      progressFill.style.width = '0%';
+    trackTitle.textContent = 'Nothing Playing';
+    trackArtist.textContent = 'Start playing music on YouTube Music';
+    trackYear.textContent = '';
+    currentTimeEl.textContent = '0:00';
+    totalTimeEl.textContent = '0:00';
+    progressFill.style.width = '0%';
 
-      albumArtContainer.classList.remove('playing');
-      albumArtContainer.classList.add('paused');
+    albumArtContainer.classList.remove('playing');
+    albumArtContainer.classList.add('paused');
 
-      // Show placeholder
-      const placeholderSvg = 'data:image/svg+xml,' + encodeURIComponent(`
-        <svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#4b5563;stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#1f2937;stop-opacity:1" />
-            </linearGradient>
-          </defs>
-          <rect width="600" height="600" fill="url(#grad)"/>
-          <text x="50%" y="50%" font-family="Arial" font-size="120" fill="#9ca3af" text-anchor="middle" dy=".3em">♪</text>
-        </svg>
-      `);
-      albumArt.src = placeholderSvg;
+    // Show placeholder
+    const placeholderSvg = 'data:image/svg+xml,' + encodeURIComponent(`
+    <svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#4b5563;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#1f2937;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <rect width="600" height="600" fill="url(#grad)" />
+      <text x="50%" y="50%" font-family="Arial" font-size="120" fill="#9ca3af" text-anchor="middle" dy=".3em">♪</text>
+    </svg>
+    `);
+    albumArt.src = placeholderSvg;
     }
 
     /**
-     * Shows error state when server is unreachable
-     */
+    * Shows error state when server is unreachable
+    */
     function showErrorState() {
-      trackTitle.textContent = 'Connection Error';
-      trackArtist.textContent = 'Unable to reach the server';
-      trackYear.textContent = '';
-      currentTimeEl.textContent = '--:--';
-      totalTimeEl.textContent = '--:--';
-      progressFill.style.width = '0%';
-      albumArtContainer.classList.remove('playing');
-      albumArtContainer.classList.add('paused');
+    trackTitle.textContent = 'Connection Error';
+    trackArtist.textContent = 'Unable to reach the server';
+    trackYear.textContent = '';
+    currentTimeEl.textContent = '--:--';
+    totalTimeEl.textContent = '--:--';
+    progressFill.style.width = '0%';
+    albumArtContainer.classList.remove('playing');
+    albumArtContainer.classList.add('paused');
     }
 
     /**
-     * Screensaver Logic
-     */
+    * Screensaver Logic
+    */
     function startScreensaverTimer() {
-      if (screensaverEl.classList.contains('visible')) return;
+    if (screensaverEl.classList.contains('visible')) return;
 
-      if (!screensaverTimer) {
-        screensaverTimer = setTimeout(showScreensaver, SCREENSAVER_DELAY);
-      }
+    if (!screensaverTimer) {
+    screensaverTimer = setTimeout(showScreensaver, SCREENSAVER_DELAY);
+    }
     }
 
     function stopScreensaverTimer() {
-      if (screensaverTimer) {
-        clearTimeout(screensaverTimer);
-        screensaverTimer = null;
-      }
-      hideScreensaver();
+    if (screensaverTimer) {
+    clearTimeout(screensaverTimer);
+    screensaverTimer = null;
+    }
+    hideScreensaver();
     }
 
     function showScreensaver() {
-      updateScreensaverTime();
-      screensaverEl.classList.add('visible');
-      screensaverInterval = setInterval(updateScreensaverTime, 1000);
+    updateScreensaverTime();
+    screensaverEl.classList.add('visible');
+    screensaverInterval = setInterval(updateScreensaverTime, 1000);
     }
 
     function hideScreensaver() {
-      screensaverEl.classList.remove('visible');
-      if (screensaverInterval) {
-        clearInterval(screensaverInterval);
-        screensaverInterval = null;
-      }
+    screensaverEl.classList.remove('visible');
+    if (screensaverInterval) {
+    clearInterval(screensaverInterval);
+    screensaverInterval = null;
+    }
     }
 
     function updateScreensaverTime() {
-      const now = new Date();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const timeString = `${hours}:${minutes}`;
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const timeString = `${hours}:${minutes}`;
 
-      const options = { weekday: 'long', month: 'long', day: 'numeric' };
-      const dateString = now.toLocaleDateString('cs-CZ', options);
+    const options = { weekday: 'long', month: 'long', day: 'numeric' };
+    const dateString = now.toLocaleDateString('cs-CZ', options);
 
-      screensaverClockEl.textContent = timeString;
-      screensaverDateEl.textContent = dateString;
+    screensaverClockEl.textContent = timeString;
+    screensaverDateEl.textContent = dateString;
     }
 
     /**
-     * Initialize the display
-     */
+    * Initialize the display
+    */
     function initialize() {
-      console.log('YouTube Music Now Playing Display initialized');
+    console.log('YouTube Music Now Playing Display initialized');
 
-      // Fetch immediately
-      fetchNowPlaying();
+    // Fetch immediately
+    fetchNowPlaying();
 
-      // Then poll at regular intervals
-      setInterval(fetchNowPlaying, POLL_INTERVAL);
+    // Then poll at regular intervals
+    setInterval(fetchNowPlaying, POLL_INTERVAL);
     }
 
     // Start when page loads
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initialize);
+    document.addEventListener('DOMContentLoaded', initialize);
     } else {
-      initialize();
+    initialize();
     }
-  </script>
+    </script>
 </body>
 
 </html>

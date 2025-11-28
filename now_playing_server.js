@@ -91,16 +91,24 @@ app.get('/', (req, res) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
+// Start the server
+const sslOptions = {
+    key: fs.readFileSync(path.join(__dirname, 'key.pem')),
+    cert: fs.readFileSync(path.join(__dirname, 'cert.pem'))
+};
+
+const https = require('https');
+
+https.createServer(sslOptions, app).listen(PORT, () => {
     console.log(`
 ╔════════════════════════════════════════════════════════════╗
 ║  YouTube Music Now Playing Server by Davidlukes            ║
-║  Status: Running                                           ║
+║  Status: Running (HTTPS)                                   ║
 ║  Port: ${PORT}                                                ║
 ╟────────────────────────────────────────────────────────────╢
 ║  Endpoints:                                                ║
-║  • POST http://localhost:${PORT}/update-track                 ║
-║  • GET  http://localhost:${PORT}/now-playing                  ║
+║  • POST https://localhost:${PORT}/update-track                ║
+║  • GET  https://localhost:${PORT}/now-playing                 ║
 ╚════════════════════════════════════════════════════════════╝
   `);
 });
