@@ -350,6 +350,62 @@
         font-size: 1.5rem;
       }
     }
+
+    /* Optimization for 800x490 (7-inch displays) */
+    @media (max-width: 850px) and (max-height: 550px) {
+      body {
+        padding: 15px;
+      }
+
+      .glass-container {
+        flex-direction: row;
+        text-align: left;
+        padding: 25px;
+        gap: 30px;
+        max-width: 100%;
+        width: 98%;
+        height: auto;
+      }
+
+      .album-art-container {
+        flex: 0 0 200px;
+        width: 200px;
+        max-width: 200px;
+      }
+
+      .info-panel {
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .track-title {
+        font-size: 2.2rem;
+        margin-bottom: 8px;
+      }
+
+      .track-artist {
+        font-size: 1.4rem;
+        margin-bottom: 6px;
+      }
+
+      .track-year {
+        font-size: 1rem;
+      }
+
+      .progress-container {
+        margin-top: 16px;
+      }
+
+      .screensaver-clock {
+        font-size: 5rem;
+      }
+
+      .screensaver-date {
+        font-size: 1.2rem;
+      }
+    }
   </style>
 </head>
 
@@ -388,10 +444,6 @@
   </div>
 
   <script>
-    // Configuration
-    const SERVER_URL = 'http://192.168.1.181:3000/now-playing';
-    const POLL_INTERVAL = 1000; // Poll every 1 second for smooth progress
-    const SCREENSAVER_DELAY = 300000; // Screensaver delay in milliseconds (10 seconds) 300000
 
     // DOM Elements
     const albumArtContainer = document.getElementById('album-art-container');
@@ -414,17 +466,18 @@
     let screensaverInterval = null;
 
     /**
-     * Updates the blurred background
-     */
+   * Updates the blurred background
+   */
     function updateBackground(imageUrl) {
       if (imageUrl) {
         // Use ::before pseudo-element for the blur effect
         const style = document.createElement('style');
-        style.textContent = `
-          body::before {
+
+        style.textContent = ` body::before {
             background-image: url(${imageUrl});
           }
-        `;
+
+          `;
         // Remove old style if exists
         const oldStyle = document.querySelector('style[data-bg]');
         if (oldStyle) oldStyle.remove();
@@ -434,36 +487,45 @@
     }
 
     /**
-     * Fetches the current track data from the server
-     */
+   * Fetches the current track data from the server
+   */
     async function fetchNowPlaying() {
       try {
         const response = await fetch(SERVER_URL);
 
         if (!response.ok) {
-          throw new Error(`Server error: ${response.status}`);
+          throw new Error(`Server error: $ {
+                response.status
+              }
+
+              `);
         }
 
         const data = await response.json();
         updateDisplay(data);
 
-      } catch (error) {
+      }
+
+      catch (error) {
         console.error('Failed to fetch now playing data:', error);
         showErrorState();
       }
     }
 
     /**
-     * Updates the display with new track data
-     */
+   * Updates the display with new track data
+   */
     function updateDisplay(data) {
-      const { title, artist, albumArt: albumArtUrl, year, currentTime, totalTime, progress, isPlaying } = data;
+      const {
+        title,
+        artist,
+        albumArt: albumArtUrl, year, currentTime, totalTime, progress, isPlaying
+      }
+
+        = data;
 
       // Check if this is actually new data (excluding time/progress for main UI updates)
-      const hasTrackChanged = !currentTrackData ||
-        currentTrackData.title !== title ||
-        currentTrackData.artist !== artist ||
-        currentTrackData.year !== year;
+      const hasTrackChanged = !currentTrackData || currentTrackData.title !== title || currentTrackData.artist !== artist || currentTrackData.year !== year;
 
       currentTrackData = data;
 
@@ -482,41 +544,53 @@
       // Update album art and background
       if (albumArtUrl && albumArt.src !== albumArtUrl) {
         albumArt.src = albumArtUrl;
-        albumArt.alt = `${title} by ${artist}`;
+
+        albumArt.alt = `$ {
+            title
+          }
+
+          by $ {
+            artist
+          }
+
+          `;
         updateBackground(albumArtUrl);
-      } else if (!albumArtUrl) {
+      }
+
+      else if (!albumArtUrl) {
         // Use a placeholder gradient if no album art
-        const placeholderSvg = 'data:image/svg+xml,' + encodeURIComponent(`
-          <svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
-              </linearGradient>
-            </defs>
-            <rect width="600" height="600" fill="url(#grad)"/>
-            <text x="50%" y="50%" font-family="Arial" font-size="80" fill="white" text-anchor="middle" dy=".3em">🎵</text>
-          </svg>
-        `);
+        const placeholderSvg = 'data:image/svg+xml,' + encodeURIComponent(` <svg width="600" height="600" xmlns="http://www.w3.org/2000/svg" > <defs> <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%" > <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" /> <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" /> </linearGradient> </defs> <rect width="600" height="600" fill="url(#grad)" /> <text x="50%" y="50%" font-family="Arial" font-size="80" fill="white" text-anchor="middle" dy=".3em" >🎵</text> </svg> `);
         albumArt.src = placeholderSvg;
       }
 
       // Update text content
       trackTitle.textContent = title;
       trackArtist.textContent = artist || 'Unknown Artist';
-      trackYear.textContent = year ? `Released: ${year}` : '';
+
+      trackYear.textContent = year ? `Released: $ {
+          year
+        }
+
+        ` : '';
 
       // Update progress
       currentTimeEl.textContent = currentTime || '0:00';
       totalTimeEl.textContent = totalTime || '0:00';
-      progressFill.style.width = `${progress || 0}%`;
+
+      progressFill.style.width = `$ {
+          progress || 0
+        }
+
+        %`;
 
       // Update status styles
       if (isPlaying) {
         albumArtContainer.classList.remove('paused');
         albumArtContainer.classList.add('playing');
         stopScreensaverTimer();
-      } else {
+      }
+
+      else {
         albumArtContainer.classList.remove('playing');
         albumArtContainer.classList.add('paused');
         startScreensaverTimer();
@@ -532,8 +606,8 @@
     }
 
     /**
-     * Shows the "Nothing Playing" state
-     */
+   * Shows the "Nothing Playing" state
+   */
     function showNothingPlayingState() {
       trackTitle.textContent = 'Nothing Playing';
       trackArtist.textContent = 'Start playing music on YouTube Music';
@@ -546,24 +620,13 @@
       albumArtContainer.classList.add('paused');
 
       // Show placeholder
-      const placeholderSvg = 'data:image/svg+xml,' + encodeURIComponent(`
-        <svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#4b5563;stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#1f2937;stop-opacity:1" />
-            </linearGradient>
-          </defs>
-          <rect width="600" height="600" fill="url(#grad)"/>
-          <text x="50%" y="50%" font-family="Arial" font-size="120" fill="#9ca3af" text-anchor="middle" dy=".3em">♪</text>
-        </svg>
-      `);
+      const placeholderSvg = 'data:image/svg+xml,' + encodeURIComponent(` <svg width="600" height="600" xmlns="http://www.w3.org/2000/svg" > <defs> <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%" > <stop offset="0%" style="stop-color:#4b5563;stop-opacity:1" /> <stop offset="100%" style="stop-color:#1f2937;stop-opacity:1" /> </linearGradient> </defs> <rect width="600" height="600" fill="url(#grad)" /> <text x="50%" y="50%" font-family="Arial" font-size="120" fill="#9ca3af" text-anchor="middle" dy=".3em" >♪</text> </svg> `);
       albumArt.src = placeholderSvg;
     }
 
     /**
-     * Shows error state when server is unreachable
-     */
+   * Shows error state when server is unreachable
+   */
     function showErrorState() {
       trackTitle.textContent = 'Connection Error';
       trackArtist.textContent = 'Unable to reach the server';
@@ -576,8 +639,8 @@
     }
 
     /**
-     * Screensaver Logic
-     */
+   * Screensaver Logic
+   */
     function startScreensaverTimer() {
       if (screensaverEl.classList.contains('visible')) return;
 
@@ -591,6 +654,7 @@
         clearTimeout(screensaverTimer);
         screensaverTimer = null;
       }
+
       hideScreensaver();
     }
 
@@ -602,6 +666,7 @@
 
     function hideScreensaver() {
       screensaverEl.classList.remove('visible');
+
       if (screensaverInterval) {
         clearInterval(screensaverInterval);
         screensaverInterval = null;
@@ -612,9 +677,22 @@
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
-      const timeString = `${hours}:${minutes}`;
 
-      const options = { weekday: 'long', month: 'long', day: 'numeric' };
+      const timeString = `$ {
+          hours
+        }
+
+        :$ {
+          minutes
+        }
+
+        `;
+
+      const options = {
+        weekday: 'long', month: 'long', day: 'numeric'
+      }
+
+        ;
       const dateString = now.toLocaleDateString('cs-CZ', options);
 
       screensaverClockEl.textContent = timeString;
@@ -622,8 +700,8 @@
     }
 
     /**
-     * Initialize the display
-     */
+   * Initialize the display
+   */
     function initialize() {
       console.log('YouTube Music Now Playing Display initialized');
 
@@ -637,9 +715,12 @@
     // Start when page loads
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initialize);
-    } else {
+    }
+
+    else {
       initialize();
     }
+
   </script>
 </body>
 
