@@ -16,7 +16,11 @@ let currentTrack = {
     title: 'Nothing Playing',
     artist: '',
     albumArt: '',
-    isPlaying: false,
+    year: '',
+    currentTime: '0:00',
+    totalTime: '0:00',
+    progress: 0,
+    isPlaying: true,
     lastUpdated: new Date().toISOString()
 };
 
@@ -26,7 +30,7 @@ let currentTrack = {
  */
 app.post('/update-track', (req, res) => {
     try {
-        const { title, artist, albumArt, isPlaying } = req.body;
+        const { title, artist, albumArt, year, currentTime, totalTime, progress, isPlaying } = req.body;
 
         // Validate required fields
         if (typeof title !== 'string') {
@@ -38,11 +42,15 @@ app.post('/update-track', (req, res) => {
             title: title || 'Nothing Playing',
             artist: artist || '',
             albumArt: albumArt || '',
+            year: year || '',
+            currentTime: currentTime || '0:00',
+            totalTime: totalTime || '0:00',
+            progress: progress || 0,
             isPlaying: isPlaying === true,
             lastUpdated: new Date().toISOString()
         };
 
-        console.log(`[Server] Track updated: "${currentTrack.title}" by ${currentTrack.artist} (Playing: ${currentTrack.isPlaying})`);
+        console.log(`[SERVER] Track updated: "${currentTrack.title}" by ${currentTrack.artist} [${currentTrack.currentTime}/${currentTrack.totalTime}]`);
 
         res.json({
             success: true,
@@ -68,7 +76,7 @@ app.get('/now-playing', (req, res) => {
  */
 app.get('/', (req, res) => {
     res.json({
-        service: 'YouTube Music Now Playing Server',
+        service: 'YouTube Music Now Playing Server by Davidlukes',
         status: 'running',
         currentTrack: currentTrack.title,
         endpoints: {
@@ -82,7 +90,7 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`
 ╔════════════════════════════════════════════════════════════╗
-║  YouTube Music Now Playing Server                          ║
+║  YouTube Music Now Playing Server by Davidlukes            ║
 ║  Status: Running                                           ║
 ║  Port: ${PORT}                                                ║
 ╟────────────────────────────────────────────────────────────╢
@@ -96,5 +104,7 @@ app.listen(PORT, () => {
 // Graceful shutdown
 process.on('SIGINT', () => {
     console.log('\n[Server] Shutting down gracefully...');
-    process.exit(0);
+    process.exit(0)
+
+        ;
 });
