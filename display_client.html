@@ -2,861 +2,861 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Now Playing - YouTube Music</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      min-height: 100vh;
-      overflow: hidden;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px;
-    }
-
-    /* Dynamic blurred background */
-    body::before {
-      content: '';
-      position: fixed;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background-size: cover;
-      background-position: center;
-      filter: blur(120px) brightness(0.6) saturate(1.4);
-      transform: scale(1.2);
-      z-index: -2;
-      transition: background-image 1s ease;
-      animation: BackgroundImage 10s ease-in-out infinite;
-    }
-
-    @keyframes BackgroundImage {
-
-      0%,
-      100% {
-        transform: scale(1.2);
-      }
-
-      50% {
-        transform: scale(2.2);
-      }
-    }
-
-    /* Gradient overlay for depth */
-    body::after {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.6) 100%);
-      z-index: -1;
-    }
-
-    .glass-container {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(50px) saturate(200%);
-      -webkit-backdrop-filter: blur(50px) saturate(200%);
-      border-radius: 40px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow:
-        0 20px 80px 0 rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-      padding: 60px;
-      max-width: 1400px;
-      width: 95%;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: 80px;
-      position: relative;
-      animation: fadeIn 0.8s ease;
-      transition: border-color 0.5s ease;
-    }
-
-    /* Subtle shimmer effect */
-    .glass-container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg,
-          transparent,
-          rgba(255, 255, 255, 0.05),
-          transparent);
-      transition: left 0.5s ease;
-      pointer-events: none;
-      border-radius: inherit;
-    }
-
-    /* Advanced Liquid Animation */
-    @keyframes rotate-blob {
-      0% {
-        transform: rotate(0deg) scale(1);
-      }
-
-      33% {
-        transform: rotate(120deg) scale(1.2);
-      }
-
-      66% {
-        transform: rotate(240deg) scale(0.8);
-      }
-
-      100% {
-        transform: rotate(360deg) scale(1);
-      }
-    }
-
-    @keyframes rotate-blob-reverse {
-      0% {
-        transform: rotate(360deg) scale(1);
-      }
-
-      33% {
-        transform: rotate(240deg) scale(0.8);
-      }
-
-      66% {
-        transform: rotate(120deg) scale(1.2);
-      }
-
-      100% {
-        transform: rotate(0deg) scale(1);
-      }
-    }
-
-    /* Heart Icon Styles */
-    .like-icon {
-      position: absolute;
-      right: 20px;
-      top: 20px;
-      width: 48px;
-      height: 48px;
-      z-index: 10;
-
-      /* Masking to create the heart shape */
-      -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>') no-repeat center;
-      mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>') no-repeat center;
-      -webkit-mask-size: contain;
-      mask-size: contain;
-
-      /* Glow effect */
-      filter: drop-shadow(0 0 8px rgba(255, 0, 50, 0.6));
-
-      opacity: 0;
-      transform: scale(0.8);
-      transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-      /* Ensure blobs stay inside */
-      overflow: hidden;
-    }
-
-    /* Liquid Blobs */
-    .like-icon::before,
-    .like-icon::after {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      border-radius: 40%;
-      opacity: 0.9;
-    }
-
-    .like-icon::before {
-      background: linear-gradient(45deg, #ff0000, #ff4d4d, #cc0000);
-      animation: rotate-blob 6s linear infinite;
-    }
-
-    .like-icon::after {
-      background: linear-gradient(45deg, #ff0055, #ff3333, #990000);
-      animation: rotate-blob-reverse 8s linear infinite;
-      mix-blend-mode: overlay;
-    }
-
-    /* Visible state for the heart */
-    .glass-container.liked .like-icon {
-      opacity: 1;
-      transform: scale(1);
-    }
-
-    .album-art-container {
-      flex: 0 0 500px;
-      width: 500px;
-      position: relative;
-      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .album-art-wrapper {
-      position: relative;
-      border-radius: 24px;
-      overflow: hidden;
-      box-shadow:
-        0 30px 60px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(255, 255, 255, 0.1);
-      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-      aspect-ratio: 1;
-    }
-
-    .album-art {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: all 0.6s ease;
-    }
-
-    .playing .album-art-wrapper {
-      animation: pulse-glow 4s ease-in-out infinite;
-    }
-
-    @keyframes pulse-glow {
-
-      0%,
-      100% {
-        box-shadow:
-          0 30px 60px rgba(0, 0, 0, 0.5),
-          0 0 0 1px rgba(255, 255, 255, 0.1);
-      }
-
-      50% {
-        box-shadow:
-          0 30px 60px rgba(0, 0, 0, 0.5),
-          0 0 0 1px rgba(255, 255, 255, 0.3),
-          0 0 80px 20px rgba(255, 255, 255, 0.15);
-      }
-    }
-
-    .paused .album-art {
-      filter: grayscale(0.3);
-    }
-
-    /* Info panel */
-    .info-panel {
-      flex: 1;
-      text-align: left;
-      min-width: 0;
-      /* Prevent flex overflow */
-    }
-
-    .track-title {
-      font-weight: 800;
-      font-size: 4.5rem;
-      line-height: 1.2;
-      color: #ffffff;
-      margin-bottom: 24px;
-      transition: all 0.4s ease;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      padding: 0.1em 0;
-    }
-
-    .track-artist {
-      font-weight: 600;
-      font-size: 2.25rem;
-      color: rgba(255, 255, 255, 0.9);
-      margin-bottom: 16px;
-      transition: all 0.4s ease;
-    }
-
-    .track-year {
-      font-weight: 500;
-      font-size: 1.5rem;
-      color: rgba(255, 255, 255, 0.7);
-      transition: all 0.4s ease;
-    }
-
-    .fade-in {
-      animation: fadeIn 0.6s ease;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Loading state */
-    .loading-state {
-      animation: fade-pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes fade-pulse {
-
-      0%,
-      100% {
-        opacity: 0.4;
-      }
-
-      50% {
-        opacity: 0.7;
-      }
-    }
-
-    /* Progress Bar */
-    .progress-container {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      width: 100%;
-      margin-top: 32px;
-    }
-
-    .time-label {
-      font-size: 0.9rem;
-      color: rgba(255, 255, 255, 0.6);
-      min-width: 45px;
-    }
-
-    .progress-bar-bg {
-      flex: 1;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      background: rgb(255, 255, 255);
-      width: 0%;
-      border-radius: 2px;
-      transition: width 0.2s linear;
-      box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-    }
-
-    /* Screensaver */
-    .screensaver {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #000000;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 1s ease;
-    }
-
-    .screensaver.visible {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .screensaver-clock {
-      font-family: 'Inter', monospace;
-      font-size: 12rem;
-      font-weight: 200;
-      color: rgba(255, 255, 255, 0.1);
-      line-height: 1;
-      margin-bottom: 20px;
-      text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
-    }
-
-    .screensaver-date {
-      font-family: 'Inter', sans-serif;
-      font-size: 3rem;
-      font-weight: 400;
-      color: rgba(255, 255, 255, 0.1);
-      text-transform: uppercase;
-      letter-spacing: 4px;
-      margin-bottom: 40px;
-    }
-
-    /* Main View Clock */
-    .main-clock-container {
-      position: fixed;
-      top: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: rgba(255, 255, 255, 0.7);
-      z-index: 10;
-    }
-
-    .main-clock-time {
-      font-family: 'Inter', monospace;
-      font-size: 3rem;
-      font-weight: 300;
-      line-height: 1;
-      text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    .main-clock-date {
-      font-family: 'Inter', sans-serif;
-      font-size: 1rem;
-      font-weight: 400;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      opacity: 0.6;
-      margin-top: 5px;
-    }
-
-    /* Polymarket Stats */
-    .polymarket-stats {
-      display: flex;
-      gap: 30px;
-      padding: 20px 40px;
-      transition: opacity 1s ease;
-      opacity: 0;
-      /* Fade in when data is loaded */
-    }
-
-    .polymarket-stats.loaded {
-      opacity: 1;
-    }
-
-    .poly-stat-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-width: 120px;
-    }
-
-    .poly-stat-label {
-      font-size: 0.9rem;
-      color: rgba(255, 255, 255, 0.5);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 5px;
-    }
-
-    .poly-stat-value {
-      font-size: 2rem;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.9);
-      font-family: 'Inter', monospace;
-    }
-
-    .poly-stat-value.positive {
-      color: #4ade80;
-      /* Tailwind green-400 */
-    }
-
-    .poly-stat-value.negative {
-      color: #f87171;
-      /* Tailwind red-400 */
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 1200px) {
-      .glass-container {
-        padding: 40px;
-        gap: 50px;
-      }
-
-      .album-art-container {
-        flex: 0 0 400px;
-        width: 400px;
-      }
-
-      .track-title {
-        font-size: 3.5rem;
-      }
-
-      .screensaver-clock {
-        font-size: 8rem;
-      }
-
-      .screensaver-date {
-        font-size: 2rem;
-      }
-    }
-
-    @media (max-width: 900px) {
-      .glass-container {
-        flex-direction: column;
-        text-align: center;
-        max-width: 500px;
-        gap: 40px;
-      }
-
-      /* Adjust heart position for mobile */
-      .like-icon {
-        right: 15px;
-        top: 15px;
-        transform: none;
-        width: 40px;
-        height: 40px;
-      }
-
-      .glass-container.liked .like-icon {
-        transform: scale(1.1);
-      }
-
-      .album-art-container {
-        flex: 0 0 auto;
-        width: 100%;
-        max-width: 350px;
-      }
-
-      .info-panel {
-        text-align: center;
-      }
-
-      .track-title {
-        font-size: 2.5rem;
-      }
-
-      .track-artist {
-        font-size: 1.5rem;
-      }
-
-      .progress-container {
-        margin-top: 24px;
-      }
-
-      .screensaver-clock {
-        font-size: 6rem;
-      }
-
-      .screensaver-date {
-        font-size: 1.5rem;
-      }
-    }
-
-    /* Optimization for 800x490 (7-inch displays) */
-    @media (max-width: 850px) and (max-height: 550px) {
-      body {
-        padding: 15px;
-      }
-
-      .glass-container {
-        flex-direction: row;
-        text-align: left;
-        padding: 25px;
-        gap: 30px;
-        max-width: 100%;
-        width: 98%;
-        height: auto;
-      }
-
-      .like-icon {
-        right: 15px;
-        top: 15px;
-        transform: none;
-        width: 40px;
-        height: 40px;
-      }
-
-      .glass-container.liked .like-icon {
-        transform: scale(1);
-      }
-
-      .album-art-container {
-        flex: 0 0 200px;
-        width: 200px;
-        max-width: 200px;
-      }
-
-      .info-panel {
-        text-align: left;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
-
-      .track-title {
-        font-size: 2.2rem;
-        margin-bottom: 8px;
-      }
-
-      .track-artist {
-        font-size: 1.4rem;
-        margin-bottom: 6px;
-      }
-
-      .track-year {
-        font-size: 1rem;
-      }
-
-      .progress-container {
-        margin-top: 16px;
-      }
-
-      .screensaver-clock {
-        font-size: 5rem;
-      }
-
-    }
-
-    /* Space Background Animation */
-    @keyframes animStar {
-      from {
-        transform: translateY(0px);
-      }
-
-      to {
-        transform: translateY(-2000px);
-      }
-    }
-
-    .stars,
-    .stars2,
-    .stars3 {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: transparent;
-      z-index: -1;
-      overflow: hidden;
-    }
-
-    .stars::after,
-    .stars2::after,
-    .stars3::after {
-      content: " ";
-      position: absolute;
-      top: 2000px;
-      width: 100%;
-      height: 100%;
-      background: inherit;
-    }
-
-    .stars {
-      width: 2px;
-      height: 2px;
-      background: transparent;
-      box-shadow: 1744px 122px #FFF, 134px 1321px #FFF, 92px 859px #FFF, 1793px 1863px #FFF, 1324px 1600px #FFF, 1400px 1000px #FFF, 500px 800px #FFF, 800px 400px #FFF, 100px 1200px #FFF, 1600px 400px #FFF, 400px 1500px #FFF, 1200px 200px #FFF, 1900px 1100px #FFF, 600px 1800px #FFF, 1500px 1400px #FFF, 300px 600px #FFF, 1100px 900px #FFF, 700px 1700px #FFF, 1800px 500px #FFF, 200px 1300px #FFF, 1450px 300px #FFF, 50px 1900px #FFF, 950px 750px #FFF, 1650px 1250px #FFF, 250px 450px #FFF, 1350px 1550px #FFF, 850px 1050px #FFF, 1750px 650px #FFF, 450px 1150px #FFF, 1150px 1650px #FFF, 1550px 250px #FFF, 550px 1450px #FFF, 1050px 550px #FFF, 1950px 1750px #FFF, 750px 950px #FFF, 1250px 1350px #FFF, 350px 1850px #FFF, 1850px 850px #FFF, 650px 350px #FFF, 1450px 1950px #FFF, 150px 750px #FFF, 900px 150px #FFF, 1600px 1100px #FFF, 400px 1600px #FFF, 1200px 500px #FFF, 1900px 1400px #FFF, 600px 900px #FFF, 1500px 1800px #FFF, 300px 200px #FFF, 1100px 1300px #FFF, 700px 600px #FFF, 1800px 1500px #FFF, 200px 800px #FFF, 100px 100px #FFF, 300px 300px #FFF, 500px 500px #FFF, 700px 700px #FFF, 900px 900px #FFF, 1100px 1100px #FFF, 1300px 1300px #FFF, 1500px 1500px #FFF, 1700px 1700px #FFF, 1900px 1900px #FFF, 150px 250px #FFF, 350px 450px #FFF, 550px 650px #FFF, 750px 850px #FFF, 950px 1050px #FFF, 1150px 1250px #FFF, 1350px 1450px #FFF, 1550px 1650px #FFF, 1750px 1850px #FFF, 1950px 50px #FFF, 50px 150px #FFF, 250px 350px #FFF, 450px 550px #FFF, 650px 750px #FFF, 850px 950px #FFF, 1050px 1150px #FFF, 1250px 1350px #FFF, 1450px 1550px #FFF, 1650px 1750px #FFF, 1850px 1950px #FFF;
-      animation: animStar 50s linear infinite;
-    }
-
-    .stars2 {
-      width: 3px;
-      height: 3px;
-      background: transparent;
-      box-shadow: 1500px 500px #FFF, 800px 1200px #FFF, 1200px 300px #FFF, 400px 1600px #FFF, 1900px 900px #FFF, 600px 1400px #FFF, 1100px 700px #FFF, 200px 1800px #FFF, 1700px 200px #FFF, 500px 1100px #FFF, 1300px 1500px #FFF, 900px 600px #FFF, 1600px 1300px #FFF, 300px 400px #FFF, 1400px 1700px #FFF, 700px 800px #FFF, 1800px 1000px #FFF, 100px 1900px #FFF, 1000px 100px #FFF, 1500px 1600px #FFF, 500px 500px #FFF, 1200px 1200px #FFF, 800px 1800px #FFF, 200px 200px #FFF, 1900px 1400px #FFF, 600px 600px #FFF, 1600px 1600px #FFF, 900px 900px #FFF, 300px 1300px #FFF, 1400px 400px #FFF, 100px 500px #FFF, 200px 600px #FFF, 300px 700px #FFF, 400px 800px #FFF, 500px 900px #FFF, 600px 1000px #FFF, 700px 1100px #FFF, 800px 1200px #FFF, 900px 1300px #FFF, 1000px 1400px #FFF, 1100px 1500px #FFF, 1200px 1600px #FFF, 1300px 1700px #FFF, 1400px 1800px #FFF, 1500px 1900px #FFF, 1600px 50px #FFF, 1700px 150px #FFF, 1800px 250px #FFF, 1900px 350px #FFF, 50px 450px #FFF, 150px 550px #FFF, 250px 650px #FFF, 350px 750px #FFF, 450px 850px #FFF, 550px 950px #FFF, 650px 1050px #FFF, 750px 1150px #FFF, 850px 1250px #FFF, 950px 1350px #FFF, 1050px 1450px #FFF;
-      animation: animStar 100s linear infinite;
-    }
-
-    .stars2::after {
-      box-shadow: 1500px 500px #FFF, 800px 1200px #FFF, 1200px 300px #FFF, 400px 1600px #FFF, 1900px 900px #FFF, 600px 1400px #FFF, 1100px 700px #FFF, 200px 1800px #FFF, 1700px 200px #FFF, 500px 1100px #FFF, 1300px 1500px #FFF, 900px 600px #FFF, 1600px 1300px #FFF, 300px 400px #FFF, 1400px 1700px #FFF, 700px 800px #FFF, 1800px 1000px #FFF, 100px 1900px #FFF, 1000px 100px #FFF, 1500px 1600px #FFF, 500px 500px #FFF, 1200px 1200px #FFF, 800px 1800px #FFF, 200px 200px #FFF, 1900px 1400px #FFF, 600px 600px #FFF, 1600px 1600px #FFF, 900px 900px #FFF, 300px 1300px #FFF, 1400px 400px #FFF, 100px 500px #FFF, 200px 600px #FFF, 300px 700px #FFF, 400px 800px #FFF, 500px 900px #FFF, 600px 1000px #FFF, 700px 1100px #FFF, 800px 1200px #FFF, 900px 1300px #FFF, 1000px 1400px #FFF, 1100px 1500px #FFF, 1200px 1600px #FFF, 1300px 1700px #FFF, 1400px 1800px #FFF, 1500px 1900px #FFF, 1600px 50px #FFF, 1700px 150px #FFF, 1800px 250px #FFF, 1900px 350px #FFF, 50px 450px #FFF, 150px 550px #FFF, 250px 650px #FFF, 350px 750px #FFF, 450px 850px #FFF, 550px 950px #FFF, 650px 1050px #FFF, 750px 1150px #FFF, 850px 1250px #FFF, 950px 1350px #FFF, 1050px 1450px #FFF;
-    }
-
-    .stars3 {
-      width: 4px;
-      height: 4px;
-      background: transparent;
-      box-shadow: 800px 400px #FFF, 1500px 1200px #FFF, 300px 1800px #FFF, 1200px 600px #FFF, 600px 1500px #FFF, 1800px 200px #FFF, 200px 1000px #FFF, 1400px 1600px #FFF, 900px 800px #FFF, 1600px 300px #FFF, 500px 1300px #FFF, 1100px 1900px #FFF, 100px 500px #FFF, 1700px 1400px #FFF, 400px 900px #FFF, 1300px 100px #FFF, 700px 1700px #FFF, 1900px 700px #FFF, 1000px 1500px #FFF, 1500px 500px #FFF, 100px 200px #FFF, 300px 400px #FFF, 500px 600px #FFF, 700px 800px #FFF, 900px 1000px #FFF, 1100px 1200px #FFF, 1300px 1400px #FFF, 1500px 1600px #FFF, 1700px 1800px #FFF, 1900px 50px #FFF, 50px 250px #FFF, 250px 450px #FFF, 450px 650px #FFF, 650px 850px #FFF, 850px 1050px #FFF, 1050px 1250px #FFF, 1250px 1450px #FFF, 1450px 1650px #FFF, 1650px 1850px #FFF, 1850px 50px #FFF;
-      animation: animStar 150s linear infinite;
-    }
-
-    .stars3::after {
-      box-shadow: 800px 400px #FFF, 1500px 1200px #FFF, 300px 1800px #FFF, 1200px 600px #FFF, 600px 1500px #FFF, 1800px 200px #FFF, 200px 1000px #FFF, 1400px 1600px #FFF, 900px 800px #FFF, 1600px 300px #FFF, 500px 1300px #FFF, 1100px 1900px #FFF, 100px 500px #FFF, 1700px 1400px #FFF, 400px 900px #FFF, 1300px 100px #FFF, 700px 1700px #FFF, 1900px 700px #FFF, 1000px 1500px #FFF, 1500px 500px #FFF, 100px 200px #FFF, 300px 400px #FFF, 500px 600px #FFF, 700px 800px #FFF, 900px 1000px #FFF, 1100px 1200px #FFF, 1300px 1400px #FFF, 1500px 1600px #FFF, 1700px 1800px #FFF, 1900px 50px #FFF, 50px 250px #FFF, 250px 450px #FFF, 450px 650px #FFF, 650px 850px #FFF, 850px 1050px #FFF, 1050px 1250px #FFF, 1250px 1450px #FFF, 1450px 1650px #FFF, 1650px 1850px #FFF, 1850px 50px #FFF;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Now Playing - YouTube Music</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        /* Dynamic blurred background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(120px) brightness(0.6) saturate(1.4);
+            transform: scale(1.2);
+            z-index: -2;
+            transition: background-image 1s ease;
+            animation: BackgroundImage 10s ease-in-out infinite;
+        }
+
+        @keyframes BackgroundImage {
+
+            0%,
+            100% {
+                transform: scale(1.2);
+            }
+
+            50% {
+                transform: scale(2.2);
+            }
+        }
+
+        /* Gradient overlay for depth */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.6) 100%);
+            z-index: -1;
+        }
+
+        .glass-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(50px) saturate(200%);
+            -webkit-backdrop-filter: blur(50px) saturate(200%);
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow:
+                0 20px 80px 0 rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+            padding: 60px;
+            max-width: 1400px;
+            width: 95%;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 80px;
+            position: relative;
+            animation: fadeIn 0.8s ease;
+            transition: border-color 0.5s ease;
+        }
+
+        /* Subtle shimmer effect */
+        .glass-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.05),
+                    transparent);
+            transition: left 0.5s ease;
+            pointer-events: none;
+            border-radius: inherit;
+        }
+
+        /* Advanced Liquid Animation */
+        @keyframes rotate-blob {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+
+            33% {
+                transform: rotate(120deg) scale(1.2);
+            }
+
+            66% {
+                transform: rotate(240deg) scale(0.8);
+            }
+
+            100% {
+                transform: rotate(360deg) scale(1);
+            }
+        }
+
+        @keyframes rotate-blob-reverse {
+            0% {
+                transform: rotate(360deg) scale(1);
+            }
+
+            33% {
+                transform: rotate(240deg) scale(0.8);
+            }
+
+            66% {
+                transform: rotate(120deg) scale(1.2);
+            }
+
+            100% {
+                transform: rotate(0deg) scale(1);
+            }
+        }
+
+        /* Heart Icon Styles */
+        .like-icon {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            width: 48px;
+            height: 48px;
+            z-index: 10;
+
+            /* Masking to create the heart shape */
+            -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>') no-repeat center;
+            mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="black" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>') no-repeat center;
+            -webkit-mask-size: contain;
+            mask-size: contain;
+
+            /* Glow effect */
+            filter: drop-shadow(0 0 8px rgba(255, 0, 50, 0.6));
+
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+            /* Ensure blobs stay inside */
+            overflow: hidden;
+        }
+
+        /* Liquid Blobs */
+        .like-icon::before,
+        .like-icon::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            border-radius: 40%;
+            opacity: 0.9;
+        }
+
+        .like-icon::before {
+            background: linear-gradient(45deg, #ff0000, #ff4d4d, #cc0000);
+            animation: rotate-blob 6s linear infinite;
+        }
+
+        .like-icon::after {
+            background: linear-gradient(45deg, #ff0055, #ff3333, #990000);
+            animation: rotate-blob-reverse 8s linear infinite;
+            mix-blend-mode: overlay;
+        }
+
+        /* Visible state for the heart */
+        .glass-container.liked .like-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .album-art-container {
+            flex: 0 0 500px;
+            width: 500px;
+            position: relative;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .album-art-wrapper {
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow:
+                0 30px 60px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            aspect-ratio: 1;
+        }
+
+        .album-art {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: all 0.6s ease;
+        }
+
+        .playing .album-art-wrapper {
+            animation: pulse-glow 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                box-shadow:
+                    0 30px 60px rgba(0, 0, 0, 0.5),
+                    0 0 0 1px rgba(255, 255, 255, 0.1);
+            }
+
+            50% {
+                box-shadow:
+                    0 30px 60px rgba(0, 0, 0, 0.5),
+                    0 0 0 1px rgba(255, 255, 255, 0.3),
+                    0 0 80px 20px rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        .paused .album-art {
+            filter: grayscale(0.3);
+        }
+
+        /* Info panel */
+        .info-panel {
+            flex: 1;
+            text-align: left;
+            min-width: 0;
+            /* Prevent flex overflow */
+        }
+
+        .track-title {
+            font-weight: 800;
+            font-size: 4.5rem;
+            line-height: 1.2;
+            color: #ffffff;
+            margin-bottom: 24px;
+            transition: all 0.4s ease;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            padding: 0.1em 0;
+        }
+
+        .track-artist {
+            font-weight: 600;
+            font-size: 2.25rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 16px;
+            transition: all 0.4s ease;
+        }
+
+        .track-year {
+            font-weight: 500;
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.4s ease;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading state */
+        .loading-state {
+            animation: fade-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes fade-pulse {
+
+            0%,
+            100% {
+                opacity: 0.4;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            margin-top: 32px;
+        }
+
+        .time-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            min-width: 45px;
+        }
+
+        .progress-bar-bg {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: rgb(255, 255, 255);
+            width: 0%;
+            border-radius: 2px;
+            transition: width 0.2s linear;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        /* Screensaver */
+        .screensaver {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease;
+        }
+
+        .screensaver.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .screensaver-clock {
+            font-family: 'Inter', monospace;
+            font-size: 12rem;
+            font-weight: 200;
+            color: rgba(255, 255, 255, 0.1);
+            line-height: 1;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+        }
+
+        .screensaver-date {
+            font-family: 'Inter', sans-serif;
+            font-size: 3rem;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.1);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 40px;
+        }
+
+        /* Main View Clock */
+        .main-clock-container {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.7);
+            z-index: 10;
+        }
+
+        .main-clock-time {
+            font-family: 'Inter', monospace;
+            font-size: 3rem;
+            font-weight: 300;
+            line-height: 1;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-clock-date {
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.6;
+            margin-top: 5px;
+        }
+
+        /* Polymarket Stats */
+        .polymarket-stats {
+            display: flex;
+            gap: 30px;
+            padding: 20px 40px;
+            transition: opacity 1s ease;
+            opacity: 0;
+            /* Fade in when data is loaded */
+        }
+
+        .polymarket-stats.loaded {
+            opacity: 1;
+        }
+
+        .poly-stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 120px;
+        }
+
+        .poly-stat-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .poly-stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            font-family: 'Inter', monospace;
+        }
+
+        .poly-stat-value.positive {
+            color: #4ade80;
+            /* Tailwind green-400 */
+        }
+
+        .poly-stat-value.negative {
+            color: #f87171;
+            /* Tailwind red-400 */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .glass-container {
+                padding: 40px;
+                gap: 50px;
+            }
+
+            .album-art-container {
+                flex: 0 0 400px;
+                width: 400px;
+            }
+
+            .track-title {
+                font-size: 3.5rem;
+            }
+
+            .screensaver-clock {
+                font-size: 8rem;
+            }
+
+            .screensaver-date {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .glass-container {
+                flex-direction: column;
+                text-align: center;
+                max-width: 500px;
+                gap: 40px;
+            }
+
+            /* Adjust heart position for mobile */
+            .like-icon {
+                right: 15px;
+                top: 15px;
+                transform: none;
+                width: 40px;
+                height: 40px;
+            }
+
+            .glass-container.liked .like-icon {
+                transform: scale(1.1);
+            }
+
+            .album-art-container {
+                flex: 0 0 auto;
+                width: 100%;
+                max-width: 350px;
+            }
+
+            .info-panel {
+                text-align: center;
+            }
+
+            .track-title {
+                font-size: 2.5rem;
+            }
+
+            .track-artist {
+                font-size: 1.5rem;
+            }
+
+            .progress-container {
+                margin-top: 24px;
+            }
+
+            .screensaver-clock {
+                font-size: 6rem;
+            }
+
+            .screensaver-date {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Optimization for 800x490 (7-inch displays) */
+        @media (max-width: 850px) and (max-height: 550px) {
+            body {
+                padding: 15px;
+            }
+
+            .glass-container {
+                flex-direction: row;
+                text-align: left;
+                padding: 25px;
+                gap: 30px;
+                max-width: 100%;
+                width: 98%;
+                height: auto;
+            }
+
+            .like-icon {
+                right: 15px;
+                top: 15px;
+                transform: none;
+                width: 40px;
+                height: 40px;
+            }
+
+            .glass-container.liked .like-icon {
+                transform: scale(1);
+            }
+
+            .album-art-container {
+                flex: 0 0 200px;
+                width: 200px;
+                max-width: 200px;
+            }
+
+            .info-panel {
+                text-align: left;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .track-title {
+                font-size: 2.2rem;
+                margin-bottom: 8px;
+            }
+
+            .track-artist {
+                font-size: 1.4rem;
+                margin-bottom: 6px;
+            }
+
+            .track-year {
+                font-size: 1rem;
+            }
+
+            .progress-container {
+                margin-top: 16px;
+            }
+
+            .screensaver-clock {
+                font-size: 5rem;
+            }
+
+        }
+
+        /* Space Background Animation */
+        @keyframes animStar {
+            from {
+                transform: translateY(0px);
+            }
+
+            to {
+                transform: translateY(-2000px);
+            }
+        }
+
+        .stars,
+        .stars2,
+        .stars3 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .stars::after,
+        .stars2::after,
+        .stars3::after {
+            content: " ";
+            position: absolute;
+            top: 2000px;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+        }
+
+        .stars {
+            width: 2px;
+            height: 2px;
+            background: transparent;
+            box-shadow: 1744px 122px #FFF, 134px 1321px #FFF, 92px 859px #FFF, 1793px 1863px #FFF, 1324px 1600px #FFF, 1400px 1000px #FFF, 500px 800px #FFF, 800px 400px #FFF, 100px 1200px #FFF, 1600px 400px #FFF, 400px 1500px #FFF, 1200px 200px #FFF, 1900px 1100px #FFF, 600px 1800px #FFF, 1500px 1400px #FFF, 300px 600px #FFF, 1100px 900px #FFF, 700px 1700px #FFF, 1800px 500px #FFF, 200px 1300px #FFF, 1450px 300px #FFF, 50px 1900px #FFF, 950px 750px #FFF, 1650px 1250px #FFF, 250px 450px #FFF, 1350px 1550px #FFF, 850px 1050px #FFF, 1750px 650px #FFF, 450px 1150px #FFF, 1150px 1650px #FFF, 1550px 250px #FFF, 550px 1450px #FFF, 1050px 550px #FFF, 1950px 1750px #FFF, 750px 950px #FFF, 1250px 1350px #FFF, 350px 1850px #FFF, 1850px 850px #FFF, 650px 350px #FFF, 1450px 1950px #FFF, 150px 750px #FFF, 900px 150px #FFF, 1600px 1100px #FFF, 400px 1600px #FFF, 1200px 500px #FFF, 1900px 1400px #FFF, 600px 900px #FFF, 1500px 1800px #FFF, 300px 200px #FFF, 1100px 1300px #FFF, 700px 600px #FFF, 1800px 1500px #FFF, 200px 800px #FFF, 100px 100px #FFF, 300px 300px #FFF, 500px 500px #FFF, 700px 700px #FFF, 900px 900px #FFF, 1100px 1100px #FFF, 1300px 1300px #FFF, 1500px 1500px #FFF, 1700px 1700px #FFF, 1900px 1900px #FFF, 150px 250px #FFF, 350px 450px #FFF, 550px 650px #FFF, 750px 850px #FFF, 950px 1050px #FFF, 1150px 1250px #FFF, 1350px 1450px #FFF, 1550px 1650px #FFF, 1750px 1850px #FFF, 1950px 50px #FFF, 50px 150px #FFF, 250px 350px #FFF, 450px 550px #FFF, 650px 750px #FFF, 850px 950px #FFF, 1050px 1150px #FFF, 1250px 1350px #FFF, 1450px 1550px #FFF, 1650px 1750px #FFF, 1850px 1950px #FFF;
+            animation: animStar 50s linear infinite;
+        }
+
+        .stars2 {
+            width: 3px;
+            height: 3px;
+            background: transparent;
+            box-shadow: 1500px 500px #FFF, 800px 1200px #FFF, 1200px 300px #FFF, 400px 1600px #FFF, 1900px 900px #FFF, 600px 1400px #FFF, 1100px 700px #FFF, 200px 1800px #FFF, 1700px 200px #FFF, 500px 1100px #FFF, 1300px 1500px #FFF, 900px 600px #FFF, 1600px 1300px #FFF, 300px 400px #FFF, 1400px 1700px #FFF, 700px 800px #FFF, 1800px 1000px #FFF, 100px 1900px #FFF, 1000px 100px #FFF, 1500px 1600px #FFF, 500px 500px #FFF, 1200px 1200px #FFF, 800px 1800px #FFF, 200px 200px #FFF, 1900px 1400px #FFF, 600px 600px #FFF, 1600px 1600px #FFF, 900px 900px #FFF, 300px 1300px #FFF, 1400px 400px #FFF, 100px 500px #FFF, 200px 600px #FFF, 300px 700px #FFF, 400px 800px #FFF, 500px 900px #FFF, 600px 1000px #FFF, 700px 1100px #FFF, 800px 1200px #FFF, 900px 1300px #FFF, 1000px 1400px #FFF, 1100px 1500px #FFF, 1200px 1600px #FFF, 1300px 1700px #FFF, 1400px 1800px #FFF, 1500px 1900px #FFF, 1600px 50px #FFF, 1700px 150px #FFF, 1800px 250px #FFF, 1900px 350px #FFF, 50px 450px #FFF, 150px 550px #FFF, 250px 650px #FFF, 350px 750px #FFF, 450px 850px #FFF, 550px 950px #FFF, 650px 1050px #FFF, 750px 1150px #FFF, 850px 1250px #FFF, 950px 1350px #FFF, 1050px 1450px #FFF;
+            animation: animStar 100s linear infinite;
+        }
+
+        .stars2::after {
+            box-shadow: 1500px 500px #FFF, 800px 1200px #FFF, 1200px 300px #FFF, 400px 1600px #FFF, 1900px 900px #FFF, 600px 1400px #FFF, 1100px 700px #FFF, 200px 1800px #FFF, 1700px 200px #FFF, 500px 1100px #FFF, 1300px 1500px #FFF, 900px 600px #FFF, 1600px 1300px #FFF, 300px 400px #FFF, 1400px 1700px #FFF, 700px 800px #FFF, 1800px 1000px #FFF, 100px 1900px #FFF, 1000px 100px #FFF, 1500px 1600px #FFF, 500px 500px #FFF, 1200px 1200px #FFF, 800px 1800px #FFF, 200px 200px #FFF, 1900px 1400px #FFF, 600px 600px #FFF, 1600px 1600px #FFF, 900px 900px #FFF, 300px 1300px #FFF, 1400px 400px #FFF, 100px 500px #FFF, 200px 600px #FFF, 300px 700px #FFF, 400px 800px #FFF, 500px 900px #FFF, 600px 1000px #FFF, 700px 1100px #FFF, 800px 1200px #FFF, 900px 1300px #FFF, 1000px 1400px #FFF, 1100px 1500px #FFF, 1200px 1600px #FFF, 1300px 1700px #FFF, 1400px 1800px #FFF, 1500px 1900px #FFF, 1600px 50px #FFF, 1700px 150px #FFF, 1800px 250px #FFF, 1900px 350px #FFF, 50px 450px #FFF, 150px 550px #FFF, 250px 650px #FFF, 350px 750px #FFF, 450px 850px #FFF, 550px 950px #FFF, 650px 1050px #FFF, 750px 1150px #FFF, 850px 1250px #FFF, 950px 1350px #FFF, 1050px 1450px #FFF;
+        }
+
+        .stars3 {
+            width: 4px;
+            height: 4px;
+            background: transparent;
+            box-shadow: 800px 400px #FFF, 1500px 1200px #FFF, 300px 1800px #FFF, 1200px 600px #FFF, 600px 1500px #FFF, 1800px 200px #FFF, 200px 1000px #FFF, 1400px 1600px #FFF, 900px 800px #FFF, 1600px 300px #FFF, 500px 1300px #FFF, 1100px 1900px #FFF, 100px 500px #FFF, 1700px 1400px #FFF, 400px 900px #FFF, 1300px 100px #FFF, 700px 1700px #FFF, 1900px 700px #FFF, 1000px 1500px #FFF, 1500px 500px #FFF, 100px 200px #FFF, 300px 400px #FFF, 500px 600px #FFF, 700px 800px #FFF, 900px 1000px #FFF, 1100px 1200px #FFF, 1300px 1400px #FFF, 1500px 1600px #FFF, 1700px 1800px #FFF, 1900px 50px #FFF, 50px 250px #FFF, 250px 450px #FFF, 450px 650px #FFF, 650px 850px #FFF, 850px 1050px #FFF, 1050px 1250px #FFF, 1250px 1450px #FFF, 1450px 1650px #FFF, 1650px 1850px #FFF, 1850px 50px #FFF;
+            animation: animStar 150s linear infinite;
+        }
+
+        .stars3::after {
+            box-shadow: 800px 400px #FFF, 1500px 1200px #FFF, 300px 1800px #FFF, 1200px 600px #FFF, 600px 1500px #FFF, 1800px 200px #FFF, 200px 1000px #FFF, 1400px 1600px #FFF, 900px 800px #FFF, 1600px 300px #FFF, 500px 1300px #FFF, 1100px 1900px #FFF, 100px 500px #FFF, 1700px 1400px #FFF, 400px 900px #FFF, 1300px 100px #FFF, 700px 1700px #FFF, 1900px 700px #FFF, 1000px 1500px #FFF, 1500px 500px #FFF, 100px 200px #FFF, 300px 400px #FFF, 500px 600px #FFF, 700px 800px #FFF, 900px 1000px #FFF, 1100px 1200px #FFF, 1300px 1400px #FFF, 1500px 1600px #FFF, 1700px 1800px #FFF, 1900px 50px #FFF, 50px 250px #FFF, 250px 450px #FFF, 450px 650px #FFF, 650px 850px #FFF, 850px 1050px #FFF, 1050px 1250px #FFF, 1250px 1450px #FFF, 1450px 1650px #FFF, 1650px 1850px #FFF, 1850px 50px #FFF;
+        }
+    </style>
 </head>
 
 <body>
-  <div class="stars"></div>
-  <div class="stars3"></div>
-
-  <!-- Main Clock -->
-  <div class="main-clock-container">
-    <div id="main-clock-time" class="main-clock-time">--:--</div>
-    <div id="main-clock-date" class="main-clock-date">--</div>
-  </div>
-
-  <div class="glass-container">
-
-    <div id="album-art-container" class="album-art-container">
-      <div id="album-art-wrapper" class="album-art-wrapper">
-        <img id="album-art" class="album-art" src="" alt="Album Art" />
-        <!-- Liquid Heart Icon -->
-        <div class="like-icon"></div>
-      </div>
-    </div>
-
-    <div class="info-panel">
-      <h1 id="track-title" class="track-title">
-        Connecting...
-      </h1>
-
-      <p id="track-artist" class="track-artist">
-        Please wait
-      </p>
-
-      <p id="track-year" class="track-year"></p>
-
-      <div class="progress-container">
-        <div id="current-time" class="time-label">0:00</div>
-        <div class="progress-bar-bg">
-          <div id="progress-fill" class="progress-bar-fill"></div>
-        </div>
-        <div id="total-time" class="time-label">0:00</div>
-      </div>
-    </div>
-  </div>
-
-  <div id="screensaver" class="screensaver">
     <div class="stars"></div>
     <div class="stars3"></div>
-    <div id="screensaver-clock" class="screensaver-clock">12:00</div>
-    <div id="screensaver-date" class="screensaver-date">Monday, January 1</div>
 
-    <!-- Polymarket Stats container -->
-    <div id="polymarket-stats" class="polymarket-stats">
-      <div class="poly-stat-item">
-        <span class="poly-stat-label">Positions Value</span>
-        <span id="poly-value" class="poly-stat-value">--</span>
-      </div>
-      <div class="poly-stat-item">
-        <span class="poly-stat-label">Profit/Loss</span>
-        <span id="poly-pnl" class="poly-stat-value">--</span>
-      </div>
-      <div class="poly-stat-item">
-        <span class="poly-stat-label">Predictions</span>
-        <span id="poly-count" class="poly-stat-value">--</span>
-      </div>
+    <!-- Main Clock -->
+    <div class="main-clock-container">
+        <div id="main-clock-time" class="main-clock-time">--:--</div>
+        <div id="main-clock-date" class="main-clock-date">--</div>
     </div>
-  </div>
-  <script>
-    // Configuration
-    const SERVER_URL = 'https://192.168.1.181:3000/now-playing';
-    const POLL_INTERVAL = 1000; // Poll every 1 second for smooth progress
-    const SCREENSAVER_DELAY = 30000; //1 minute
 
-    // DOM Elements
-    const albumArtContainer = document.getElementById('album-art-container');
-    const albumArtWrapper = document.getElementById('album-art-wrapper');
-    const albumArt = document.getElementById('album-art');
-    const trackTitle = document.getElementById('track-title');
-    const trackArtist = document.getElementById('track-artist');
-    const trackYear = document.getElementById('track-year');
-    const currentTimeEl = document.getElementById('current-time');
-    const totalTimeEl = document.getElementById('total-time');
-    const progressFill = document.getElementById('progress-fill');
-    const screensaverEl = document.getElementById('screensaver');
-    const screensaverClockEl = document.getElementById('screensaver-clock');
-    const screensaverDateEl = document.getElementById('screensaver-date');
-    const mainClockTimeEl = document.getElementById('main-clock-time');
-    const mainClockDateEl = document.getElementById('main-clock-date');
+    <div class="glass-container">
 
-    // State
-    let currentTrackData = null;
-    let isFirstLoad = true;
-    let screensaverTimer = null;
-    let screensaverInterval = null;
+        <div id="album-art-container" class="album-art-container">
+            <div id="album-art-wrapper" class="album-art-wrapper">
+                <img id="album-art" class="album-art" src="" alt="Album Art" />
+                <!-- Liquid Heart Icon -->
+                <div class="like-icon"></div>
+            </div>
+        </div>
 
-    /**
-     * Updates the blurred background
-     */
-    function updateBackground(imageUrl) {
-      if (imageUrl) {
-        // Use ::before pseudo-element for the blur effect
-        const style = document.createElement('style');
-        style.textContent = `
+        <div class="info-panel">
+            <h1 id="track-title" class="track-title">
+                Connecting...
+            </h1>
+
+            <p id="track-artist" class="track-artist">
+                Please wait
+            </p>
+
+            <p id="track-year" class="track-year"></p>
+
+            <div class="progress-container">
+                <div id="current-time" class="time-label">0:00</div>
+                <div class="progress-bar-bg">
+                    <div id="progress-fill" class="progress-bar-fill"></div>
+                </div>
+                <div id="total-time" class="time-label">0:00</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="screensaver" class="screensaver">
+        <div class="stars"></div>
+        <div class="stars3"></div>
+        <div id="screensaver-clock" class="screensaver-clock">12:00</div>
+        <div id="screensaver-date" class="screensaver-date">Monday, January 1</div>
+
+        <!-- Polymarket Stats container -->
+        <div id="polymarket-stats" class="polymarket-stats">
+            <div class="poly-stat-item">
+                <span class="poly-stat-label">Positions Value</span>
+                <span id="poly-value" class="poly-stat-value">--</span>
+            </div>
+            <div class="poly-stat-item">
+                <span class="poly-stat-label">Profit/Loss</span>
+                <span id="poly-pnl" class="poly-stat-value">--</span>
+            </div>
+            <div class="poly-stat-item">
+                <span class="poly-stat-label">Predictions</span>
+                <span id="poly-count" class="poly-stat-value">--</span>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Configuration
+        const SERVER_URL = 'https://192.168.1.181:3000/now-playing';
+        const POLL_INTERVAL = 1000; // Poll every 1 second for smooth progress
+        const SCREENSAVER_DELAY = 30000; //1 minute
+
+        // DOM Elements
+        const albumArtContainer = document.getElementById('album-art-container');
+        const albumArtWrapper = document.getElementById('album-art-wrapper');
+        const albumArt = document.getElementById('album-art');
+        const trackTitle = document.getElementById('track-title');
+        const trackArtist = document.getElementById('track-artist');
+        const trackYear = document.getElementById('track-year');
+        const currentTimeEl = document.getElementById('current-time');
+        const totalTimeEl = document.getElementById('total-time');
+        const progressFill = document.getElementById('progress-fill');
+        const screensaverEl = document.getElementById('screensaver');
+        const screensaverClockEl = document.getElementById('screensaver-clock');
+        const screensaverDateEl = document.getElementById('screensaver-date');
+        const mainClockTimeEl = document.getElementById('main-clock-time');
+        const mainClockDateEl = document.getElementById('main-clock-date');
+
+        // State
+        let currentTrackData = null;
+        let isFirstLoad = true;
+        let screensaverTimer = null;
+        let screensaverInterval = null;
+
+        /**
+         * Updates the blurred background
+         */
+        function updateBackground(imageUrl) {
+            if (imageUrl) {
+                // Use ::before pseudo-element for the blur effect
+                const style = document.createElement('style');
+                style.textContent = `
           body::before {
             background-image: url(${imageUrl});
           }
         `;
-        // Remove old style if exists
-        const oldStyle = document.querySelector('style[data-bg]');
-        if (oldStyle) oldStyle.remove();
-        style.setAttribute('data-bg', 'true');
-        document.head.appendChild(style);
-      }
-    }
-
-    /**
-     * Fetches the current track data from the server
-     */
-    async function fetchNowPlaying() {
-      try {
-        const response = await fetch(SERVER_URL);
-
-        if (!response.ok) {
-          throw new Error(`Server error: ${response.status}`);
+                // Remove old style if exists
+                const oldStyle = document.querySelector('style[data-bg]');
+                if (oldStyle) oldStyle.remove();
+                style.setAttribute('data-bg', 'true');
+                document.head.appendChild(style);
+            }
         }
 
-        const data = await response.json();
-        updateDisplay(data);
+        /**
+         * Fetches the current track data from the server
+         */
+        async function fetchNowPlaying() {
+            try {
+                const response = await fetch(SERVER_URL);
 
-      } catch (error) {
-        console.error('Failed to fetch now playing data:', error);
-        showErrorState();
-      }
-    }
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
 
-    /**
-     * Updates the display with new track data
-     */
-    function updateDisplay(data) {
-      const { title, artist, albumArt: albumArtUrl, year, currentTime, totalTime, progress, isPlaying, isLiked } = data;
+                const data = await response.json();
+                updateDisplay(data);
 
-      // Check if this is actually new data (excluding time/progress for main UI updates)
-      const hasTrackChanged = !currentTrackData ||
-        currentTrackData.title !== title ||
-        currentTrackData.artist !== artist ||
-        currentTrackData.year !== year ||
-        currentTrackData.isLiked !== isLiked;
+            } catch (error) {
+                console.error('Failed to fetch now playing data:', error);
+                showErrorState();
+            }
+        }
 
-      currentTrackData = data;
+        /**
+         * Updates the display with new track data
+         */
+        function updateDisplay(data) {
+            const { title, artist, albumArt: albumArtUrl, year, currentTime, totalTime, progress, isPlaying, isLiked } = data;
 
-      // Reset screensaver timer if track has changed
-      if (hasTrackChanged) {
-        stopScreensaverTimer();
-      }
+            // Check if this is actually new data (excluding time/progress for main UI updates)
+            const hasTrackChanged = !currentTrackData ||
+                currentTrackData.title !== title ||
+                currentTrackData.artist !== artist ||
+                currentTrackData.year !== year ||
+                currentTrackData.isLiked !== isLiked;
 
-      // Update playing/paused state
-      if (title === 'Nothing Playing' || !title) {
-        showNothingPlayingState();
-        startScreensaverTimer();
-        return;
-      }
+            currentTrackData = data;
 
-      // Update liked state
-      const container = document.querySelector('.glass-container');
-      if (isLiked) {
-        container.classList.add('liked');
-      } else {
-        container.classList.remove('liked');
-      }
+            // Reset screensaver timer if track has changed
+            if (hasTrackChanged) {
+                stopScreensaverTimer();
+            }
 
-      // Update album art and background
-      if (albumArtUrl && albumArt.src !== albumArtUrl) {
-        albumArt.src = albumArtUrl;
-        albumArt.alt = `${title} by ${artist}`;
-        updateBackground(albumArtUrl);
-      } else if (!albumArtUrl) {
-        // Use a placeholder gradient if no album art
-        const placeholderSvg = 'data:image/svg+xml,' + encodeURIComponent(`
+            // Update playing/paused state
+            if (title === 'Nothing Playing' || !title) {
+                showNothingPlayingState();
+                startScreensaverTimer();
+                return;
+            }
+
+            // Update liked state
+            const container = document.querySelector('.glass-container');
+            if (isLiked) {
+                container.classList.add('liked');
+            } else {
+                container.classList.remove('liked');
+            }
+
+            // Update album art and background
+            if (albumArtUrl && albumArt.src !== albumArtUrl) {
+                albumArt.src = albumArtUrl;
+                albumArt.alt = `${title} by ${artist}`;
+                updateBackground(albumArtUrl);
+            } else if (!albumArtUrl) {
+                // Use a placeholder gradient if no album art
+                const placeholderSvg = 'data:image/svg+xml,' + encodeURIComponent(`
           <svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -868,55 +868,55 @@
             <text x="50%" y="50%" font-family="Arial" font-size="80" fill="white" text-anchor="middle" dy=".3em">🎵</text>
           </svg>
         `);
-        albumArt.src = placeholderSvg;
-      }
+                albumArt.src = placeholderSvg;
+            }
 
-      // Update text content
-      trackTitle.textContent = title;
-      trackArtist.textContent = artist || 'Unknown Artist';
-      trackYear.textContent = year ? `Released: ${year}` : '';
+            // Update text content
+            trackTitle.textContent = title;
+            trackArtist.textContent = artist || 'Unknown Artist';
+            trackYear.textContent = year ? `Released: ${year}` : '';
 
-      // Update progress
-      currentTimeEl.textContent = currentTime || '0:00';
-      totalTimeEl.textContent = totalTime || '0:00';
-      progressFill.style.width = `${progress || 0}%`;
+            // Update progress
+            currentTimeEl.textContent = currentTime || '0:00';
+            totalTimeEl.textContent = totalTime || '0:00';
+            progressFill.style.width = `${progress || 0}%`;
 
-      // Update status styles
-      if (isPlaying) {
-        albumArtContainer.classList.remove('paused');
-        albumArtContainer.classList.add('playing');
-        stopScreensaverTimer();
-      } else {
-        albumArtContainer.classList.remove('playing');
-        albumArtContainer.classList.add('paused');
-        startScreensaverTimer();
-      }
+            // Update status styles
+            if (isPlaying) {
+                albumArtContainer.classList.remove('paused');
+                albumArtContainer.classList.add('playing');
+                stopScreensaverTimer();
+            } else {
+                albumArtContainer.classList.remove('playing');
+                albumArtContainer.classList.add('paused');
+                startScreensaverTimer();
+            }
 
-      // Add fade-in effect on first load or track change
-      if (isFirstLoad || hasTrackChanged) {
-        albumArtContainer.classList.remove('fade-in');
-        void albumArtContainer.offsetWidth; // Trigger reflow
-        albumArtContainer.classList.add('fade-in');
-        isFirstLoad = false;
-      }
-    }
+            // Add fade-in effect on first load or track change
+            if (isFirstLoad || hasTrackChanged) {
+                albumArtContainer.classList.remove('fade-in');
+                void albumArtContainer.offsetWidth; // Trigger reflow
+                albumArtContainer.classList.add('fade-in');
+                isFirstLoad = false;
+            }
+        }
 
-    /**
-     * Shows the "Nothing Playing" state
-     */
-    function showNothingPlayingState() {
-      trackTitle.textContent = 'Nothing Playing';
-      trackArtist.textContent = 'Start playing music on YouTube Music';
-      trackYear.textContent = '';
-      currentTimeEl.textContent = '0:00';
-      totalTimeEl.textContent = '0:00';
-      progressFill.style.width = '0%';
+        /**
+         * Shows the "Nothing Playing" state
+         */
+        function showNothingPlayingState() {
+            trackTitle.textContent = 'Nothing Playing';
+            trackArtist.textContent = 'Start playing music on YouTube Music';
+            trackYear.textContent = '';
+            currentTimeEl.textContent = '0:00';
+            totalTimeEl.textContent = '0:00';
+            progressFill.style.width = '0%';
 
-      albumArtContainer.classList.remove('playing');
-      albumArtContainer.classList.add('paused');
+            albumArtContainer.classList.remove('playing');
+            albumArtContainer.classList.add('paused');
 
-      // Show placeholder
-      const placeholderSvg = 'data:image/svg+xml,' + encodeURIComponent(`
+            // Show placeholder
+            const placeholderSvg = 'data:image/svg+xml,' + encodeURIComponent(`
         <svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -928,161 +928,161 @@
           <text x="50%" y="50%" font-family="Arial" font-size="120" fill="#9ca3af" text-anchor="middle" dy=".3em">♪</text>
         </svg>
       `);
-      albumArt.src = placeholderSvg;
-    }
-
-    /**
-     * Shows error state when server is unreachable
-     */
-    function showErrorState() {
-      trackTitle.textContent = 'Connection Error';
-      trackArtist.textContent = 'Unable to reach the server';
-      trackYear.textContent = '';
-      currentTimeEl.textContent = '--:--';
-      totalTimeEl.textContent = '--:--';
-      progressFill.style.width = '0%';
-      albumArtContainer.classList.remove('playing');
-      albumArtContainer.classList.add('paused');
-    }
-
-    /**
-     * Screensaver Logic
-     */
-    function startScreensaverTimer() {
-      if (screensaverEl.classList.contains('visible')) return;
-
-      if (!screensaverTimer) {
-        screensaverTimer = setTimeout(showScreensaver, SCREENSAVER_DELAY);
-      }
-    }
-
-    function stopScreensaverTimer() {
-      if (screensaverTimer) {
-        clearTimeout(screensaverTimer);
-        screensaverTimer = null;
-      }
-      hideScreensaver();
-    }
-
-    function showScreensaver() {
-      updateClockDisplays();
-      screensaverEl.classList.add('visible');
-      fetchPolymarketData(); // Fetch when starting screensaver
-    }
-
-    function hideScreensaver() {
-      screensaverEl.classList.remove('visible');
-    }
-
-    function updateClockDisplays() {
-      const now = new Date();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-
-      const timeString = `${hours}:${minutes}`;
-
-      const options = {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric'
-      };
-      const dateString = now.toLocaleDateString('cs-CZ', options);
-
-      screensaverClockEl.textContent = timeString;
-      screensaverDateEl.textContent = dateString;
-      mainClockTimeEl.textContent = timeString;
-      mainClockDateEl.textContent = dateString;
-    }
-
-    /**
-     * Polymarket Integration
-     */
-    async function fetchPolymarketData() {
-      const walletAddress = '0xD0f09fde3016cE15Cf73Ca776d352F7aD4C633af';
-      const positionsUrl = `https://data-api.polymarket.com/positions?user=${walletAddress}`;
-      const leaderboardUrl = `https://data-api.polymarket.com/v1/leaderboard?user=${walletAddress}&timePeriod=ALL`;
-      const polymarketStatsEl = document.getElementById('polymarket-stats');
-      const valueEl = document.getElementById('poly-value');
-      const pnlEl = document.getElementById('poly-pnl');
-      const countEl = document.getElementById('poly-count');
-
-      try {
-        const [posRes, leadRes] = await Promise.all([
-          fetch(positionsUrl),
-          fetch(leaderboardUrl)
-        ]);
-
-        if (!posRes.ok || !leadRes.ok) {
-          throw new Error('Failed to fetch Polymarket data');
+            albumArt.src = placeholderSvg;
         }
 
-        const posData = await posRes.json();
-        const leadData = await leadRes.json();
-
-        // Calculate stats
-        let totalValue = 0;
-        let activePredictions = 0;
-
-        if (Array.isArray(posData)) {
-          activePredictions = posData.length;
-          posData.forEach(position => {
-            totalValue += (position.currentValue || 0);
-          });
+        /**
+         * Shows error state when server is unreachable
+         */
+        function showErrorState() {
+            trackTitle.textContent = 'Connection Error';
+            trackArtist.textContent = 'Unable to reach the server';
+            trackYear.textContent = '';
+            currentTimeEl.textContent = '--:--';
+            totalTimeEl.textContent = '--:--';
+            progressFill.style.width = '0%';
+            albumArtContainer.classList.remove('playing');
+            albumArtContainer.classList.add('paused');
         }
 
-        let allTimePnl = 0;
-        if (Array.isArray(leadData) && leadData.length > 0 && leadData[0].pnl !== undefined) {
-          allTimePnl = leadData[0].pnl;
+        /**
+         * Screensaver Logic
+         */
+        function startScreensaverTimer() {
+            if (screensaverEl.classList.contains('visible')) return;
+
+            if (!screensaverTimer) {
+                screensaverTimer = setTimeout(showScreensaver, SCREENSAVER_DELAY);
+            }
         }
 
-        // Format and update DOM
-        valueEl.textContent = `$${totalValue.toFixed(2)}`;
+        function stopScreensaverTimer() {
+            if (screensaverTimer) {
+                clearTimeout(screensaverTimer);
+                screensaverTimer = null;
+            }
+            hideScreensaver();
+        }
 
-        // Format PnL
-        const pnlFormatted = `$${Math.abs(allTimePnl).toFixed(2)}`;
-        if (allTimePnl > 0) {
-          pnlEl.textContent = `+${pnlFormatted}`;
-          pnlEl.className = 'poly-stat-value positive';
-        } else if (allTimePnl < 0) {
-          pnlEl.textContent = `-${pnlFormatted}`;
-          pnlEl.className = 'poly-stat-value negative';
+        function showScreensaver() {
+            updateClockDisplays();
+            screensaverEl.classList.add('visible');
+            fetchPolymarketData(); // Fetch when starting screensaver
+        }
+
+        function hideScreensaver() {
+            screensaverEl.classList.remove('visible');
+        }
+
+        function updateClockDisplays() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+
+            const timeString = `${hours}:${minutes}`;
+
+            const options = {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric'
+            };
+            const dateString = now.toLocaleDateString('cs-CZ', options);
+
+            screensaverClockEl.textContent = timeString;
+            screensaverDateEl.textContent = dateString;
+            mainClockTimeEl.textContent = timeString;
+            mainClockDateEl.textContent = dateString;
+        }
+
+        /**
+         * Polymarket Integration
+         */
+        async function fetchPolymarketData() {
+            const walletAddress = '0xD0f09fde3016cE15Cf73Ca776d352F7aD4C633af';
+            const positionsUrl = `https://data-api.polymarket.com/positions?user=${walletAddress}`;
+            const leaderboardUrl = `https://data-api.polymarket.com/v1/leaderboard?user=${walletAddress}&timePeriod=ALL`;
+            const polymarketStatsEl = document.getElementById('polymarket-stats');
+            const valueEl = document.getElementById('poly-value');
+            const pnlEl = document.getElementById('poly-pnl');
+            const countEl = document.getElementById('poly-count');
+
+            try {
+                const [posRes, leadRes] = await Promise.all([
+                    fetch(positionsUrl),
+                    fetch(leaderboardUrl)
+                ]);
+
+                if (!posRes.ok || !leadRes.ok) {
+                    throw new Error('Failed to fetch Polymarket data');
+                }
+
+                const posData = await posRes.json();
+                const leadData = await leadRes.json();
+
+                // Calculate stats
+                let totalValue = 0;
+                let activePredictions = 0;
+
+                if (Array.isArray(posData)) {
+                    activePredictions = posData.length;
+                    posData.forEach(position => {
+                        totalValue += (position.currentValue || 0);
+                    });
+                }
+
+                let allTimePnl = 0;
+                if (Array.isArray(leadData) && leadData.length > 0 && leadData[0].pnl !== undefined) {
+                    allTimePnl = leadData[0].pnl;
+                }
+
+                // Format and update DOM
+                valueEl.textContent = `$${totalValue.toFixed(2)}`;
+
+                // Format PnL
+                const pnlFormatted = `$${Math.abs(allTimePnl).toFixed(2)}`;
+                if (allTimePnl > 0) {
+                    pnlEl.textContent = `+${pnlFormatted}`;
+                    pnlEl.className = 'poly-stat-value positive';
+                } else if (allTimePnl < 0) {
+                    pnlEl.textContent = `-${pnlFormatted}`;
+                    pnlEl.className = 'poly-stat-value negative';
+                } else {
+                    pnlEl.textContent = pnlFormatted;
+                    pnlEl.className = 'poly-stat-value';
+                }
+
+                countEl.textContent = activePredictions.toString();
+
+                // Show the container safely
+                polymarketStatsEl.classList.add('loaded');
+            } catch (error) {
+                console.error('Polymarket API Error:', error);
+                // Fallback gracefully without showing broken UI
+            }
+        }
+
+        /**
+         * Initialize the display
+         */
+        function initialize() {
+            console.log('YouTube Music Now Playing Display initialized');
+
+            // Fetch immediately
+            fetchNowPlaying();
+            updateClockDisplays(); // Initial clock update
+
+            // Then poll at regular intervals
+            setInterval(fetchNowPlaying, POLL_INTERVAL);
+            setInterval(updateClockDisplays, 1000); // 1s clock tick
+        }
+
+        // Start when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initialize);
         } else {
-          pnlEl.textContent = pnlFormatted;
-          pnlEl.className = 'poly-stat-value';
+            initialize();
         }
-
-        countEl.textContent = activePredictions.toString();
-
-        // Show the container safely
-        polymarketStatsEl.classList.add('loaded');
-      } catch (error) {
-        console.error('Polymarket API Error:', error);
-        // Fallback gracefully without showing broken UI
-      }
-    }
-
-    /**
-     * Initialize the display
-     */
-    function initialize() {
-      console.log('YouTube Music Now Playing Display initialized');
-
-      // Fetch immediately
-      fetchNowPlaying();
-      updateClockDisplays(); // Initial clock update
-
-      // Then poll at regular intervals
-      setInterval(fetchNowPlaying, POLL_INTERVAL);
-      setInterval(updateClockDisplays, 1000); // 1s clock tick
-    }
-
-    // Start when page loads
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initialize);
-    } else {
-      initialize();
-    }
-  </script>
+    </script>
 </body>
 
 </html>
