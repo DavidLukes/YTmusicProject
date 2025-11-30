@@ -40,6 +40,19 @@
       transform: scale(1.2);
       z-index: -2;
       transition: background-image 1s ease;
+      animation: BackgroundImage 10s ease-in-out infinite;
+    }
+
+    @keyframes BackgroundImage {
+
+      0%,
+      100% {
+        transform: scale(1.2);
+      }
+
+      50% {
+        transform: scale(2.2);
+      }
     }
 
     /* Gradient overlay for depth */
@@ -594,7 +607,6 @@
 
 <body>
   <div class="stars"></div>
-  <div class="stars2"></div>
   <div class="stars3"></div>
   <div class="glass-container">
     <div id="album-art-container" class="album-art-container">
@@ -627,8 +639,11 @@
   </div>
 
   <div id="screensaver" class="screensaver">
+    <div class="stars"></div>
+    <div class="stars3"></div>
     <div id="screensaver-clock" class="screensaver-clock">12:00</div>
     <div id="screensaver-date" class="screensaver-date">Monday, January 1</div>
+
   </div>
   <script>
     // Configuration
