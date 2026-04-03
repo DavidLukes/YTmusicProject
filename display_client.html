@@ -392,84 +392,6 @@
             color: rgba(255, 255, 255, 0.1);
             text-transform: uppercase;
             letter-spacing: 4px;
-            margin-bottom: 40px;
-        }
-
-        /* Main View Clock */
-        .main-clock-container {
-            position: fixed;
-            top: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: rgba(255, 255, 255, 0.7);
-            z-index: 10;
-        }
-
-        .main-clock-time {
-            font-family: 'Inter', monospace;
-            font-size: 3rem;
-            font-weight: 300;
-            line-height: 1;
-            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .main-clock-date {
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-            font-weight: 400;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            opacity: 0.6;
-            margin-top: 5px;
-        }
-
-        /* Polymarket Stats */
-        .polymarket-stats {
-            display: flex;
-            gap: 30px;
-            padding: 20px 40px;
-            transition: opacity 1s ease;
-            opacity: 0;
-            /* Fade in when data is loaded */
-        }
-
-        .polymarket-stats.loaded {
-            opacity: 1;
-        }
-
-        .poly-stat-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 120px;
-        }
-
-        .poly-stat-label {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.5);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-
-        .poly-stat-value {
-            font-size: 2rem;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.9);
-            font-family: 'Inter', monospace;
-        }
-
-        .poly-stat-value.positive {
-            color: #4ade80;
-            /* Tailwind green-400 */
-        }
-
-        .poly-stat-value.negative {
-            color: #f87171;
-            /* Tailwind red-400 */
         }
 
         /* Responsive adjustments */
@@ -686,15 +608,7 @@
 <body>
     <div class="stars"></div>
     <div class="stars3"></div>
-
-    <!-- Main Clock -->
-    <div class="main-clock-container">
-        <div id="main-clock-time" class="main-clock-time">--:--</div>
-        <div id="main-clock-date" class="main-clock-date">--</div>
-    </div>
-
     <div class="glass-container">
-
         <div id="album-art-container" class="album-art-container">
             <div id="album-art-wrapper" class="album-art-wrapper">
                 <img id="album-art" class="album-art" src="" alt="Album Art" />
@@ -730,21 +644,6 @@
         <div id="screensaver-clock" class="screensaver-clock">12:00</div>
         <div id="screensaver-date" class="screensaver-date">Monday, January 1</div>
 
-        <!-- Polymarket Stats container -->
-        <div id="polymarket-stats" class="polymarket-stats">
-            <div class="poly-stat-item">
-                <span class="poly-stat-label">Positions Value</span>
-                <span id="poly-value" class="poly-stat-value">--</span>
-            </div>
-            <div class="poly-stat-item">
-                <span class="poly-stat-label">Profit/Loss</span>
-                <span id="poly-pnl" class="poly-stat-value">--</span>
-            </div>
-            <div class="poly-stat-item">
-                <span class="poly-stat-label">Predictions</span>
-                <span id="poly-count" class="poly-stat-value">--</span>
-            </div>
-        </div>
     </div>
     <script>
         // Configuration
@@ -765,8 +664,6 @@
         const screensaverEl = document.getElementById('screensaver');
         const screensaverClockEl = document.getElementById('screensaver-clock');
         const screensaverDateEl = document.getElementById('screensaver-date');
-        const mainClockTimeEl = document.getElementById('main-clock-time');
-        const mainClockDateEl = document.getElementById('main-clock-date');
 
         // State
         let currentTrackData = null;
@@ -965,16 +862,20 @@
         }
 
         function showScreensaver() {
-            updateClockDisplays();
+            updateScreensaverTime();
             screensaverEl.classList.add('visible');
-            fetchPolymarketData(); // Fetch when starting screensaver
+            screensaverInterval = setInterval(updateScreensaverTime, 1000);
         }
 
         function hideScreensaver() {
             screensaverEl.classList.remove('visible');
+            if (screensaverInterval) {
+                clearInterval(screensaverInterval);
+                screensaverInterval = null;
+            }
         }
 
-        function updateClockDisplays() {
+        function updateScreensaverTime() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
@@ -990,75 +891,6 @@
 
             screensaverClockEl.textContent = timeString;
             screensaverDateEl.textContent = dateString;
-            mainClockTimeEl.textContent = timeString;
-            mainClockDateEl.textContent = dateString;
-        }
-
-        /**
-         * Polymarket Integration
-         */
-        async function fetchPolymarketData() {
-            const walletAddress = '0xD0f09fde3016cE15Cf73Ca776d352F7aD4C633af';
-            const positionsUrl = `https://data-api.polymarket.com/positions?user=${walletAddress}`;
-            const leaderboardUrl = `https://data-api.polymarket.com/v1/leaderboard?user=${walletAddress}&timePeriod=ALL`;
-            const polymarketStatsEl = document.getElementById('polymarket-stats');
-            const valueEl = document.getElementById('poly-value');
-            const pnlEl = document.getElementById('poly-pnl');
-            const countEl = document.getElementById('poly-count');
-
-            try {
-                const [posRes, leadRes] = await Promise.all([
-                    fetch(positionsUrl),
-                    fetch(leaderboardUrl)
-                ]);
-
-                if (!posRes.ok || !leadRes.ok) {
-                    throw new Error('Failed to fetch Polymarket data');
-                }
-
-                const posData = await posRes.json();
-                const leadData = await leadRes.json();
-
-                // Calculate stats
-                let totalValue = 0;
-                let activePredictions = 0;
-
-                if (Array.isArray(posData)) {
-                    activePredictions = posData.length;
-                    posData.forEach(position => {
-                        totalValue += (position.currentValue || 0);
-                    });
-                }
-
-                let allTimePnl = 0;
-                if (Array.isArray(leadData) && leadData.length > 0 && leadData[0].pnl !== undefined) {
-                    allTimePnl = leadData[0].pnl;
-                }
-
-                // Format and update DOM
-                valueEl.textContent = `$${totalValue.toFixed(2)}`;
-
-                // Format PnL
-                const pnlFormatted = `$${Math.abs(allTimePnl).toFixed(2)}`;
-                if (allTimePnl > 0) {
-                    pnlEl.textContent = `+${pnlFormatted}`;
-                    pnlEl.className = 'poly-stat-value positive';
-                } else if (allTimePnl < 0) {
-                    pnlEl.textContent = `-${pnlFormatted}`;
-                    pnlEl.className = 'poly-stat-value negative';
-                } else {
-                    pnlEl.textContent = pnlFormatted;
-                    pnlEl.className = 'poly-stat-value';
-                }
-
-                countEl.textContent = activePredictions.toString();
-
-                // Show the container safely
-                polymarketStatsEl.classList.add('loaded');
-            } catch (error) {
-                console.error('Polymarket API Error:', error);
-                // Fallback gracefully without showing broken UI
-            }
         }
 
         /**
@@ -1069,11 +901,9 @@
 
             // Fetch immediately
             fetchNowPlaying();
-            updateClockDisplays(); // Initial clock update
 
             // Then poll at regular intervals
             setInterval(fetchNowPlaying, POLL_INTERVAL);
-            setInterval(updateClockDisplays, 1000); // 1s clock tick
         }
 
         // Start when page loads
